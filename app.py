@@ -5,6 +5,7 @@ from config import Config
 from database import db_manager
 import news_service
 import ai_service
+import quiz_service
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -285,6 +286,50 @@ def update_ai_config():
             return jsonify({'success': False, 'message': 'API key did not return a valid response.'})
     except Exception as e:
         return jsonify({'success': False, 'message': f'API key validation failed: {str(e)}'})
+
+# ----------------------------------------------------------
+# DAILY CURRENT AFFAIRS QUIZ API
+# ----------------------------------------------------------
+@app.route('/api/quiz', methods=['GET'])
+def get_quiz():
+    category = request.args.get('category', 'polity').strip().lower()
+    questions = quiz_service.generate_quiz_for_category(category, count=5)
+    return jsonify({
+        'category': category,
+        'total_questions': len(questions),
+        'questions': questions
+    })
+
+@app.route('/api/quiz/submit', methods=['POST'])
+def submit_quiz():
+    data = request.get_json() or {}
+    category = data.get('category', 'General')
+    submitted_answers = data.get('answers', {})
+    original_questions = data.get('questions', [])
+    time_taken = int(data.get('time_taken', 0))
+
+    if not original_questions:
+        return jsonify({'error': 'No questions submitted for grading.'}), 400
+
+    grade_result = quiz_service.grade_quiz_submission(submitted_answers, original_questions)
+    
+    # Save to database
+    user_id = session.get('user_id')
+    db_manager.save_quiz_result(
+        user_id=user_id,
+        category_name=category,
+        score=grade_result['score'],
+        total_questions=grade_result['total_questions'],
+        time_taken_seconds=time_taken
+    )
+
+    return jsonify(grade_result)
+
+@app.route('/api/quiz/history', methods=['GET'])
+def get_quiz_history():
+    user_id = session.get('user_id')
+    history = db_manager.get_quiz_history(user_id=user_id, limit=15)
+    return jsonify({'history': history})
 
 if __name__ == '__main__':
     print(f"Extempore App running on http://127.0.0.1:5000")

@@ -66,6 +66,18 @@ CREATE TABLE IF NOT EXISTS evaluations (
     FOREIGN KEY (session_id) REFERENCES practice_sessions(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS quiz_results (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    category_name VARCHAR(100) NOT NULL,
+    score INT NOT NULL,
+    total_questions INT NOT NULL DEFAULT 5,
+    percentage DECIMAL(5,2) NOT NULL,
+    time_taken_seconds INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Seed default categories
 INSERT IGNORE INTO categories (id, name, slug, icon, description) VALUES
 (1, 'National & Polity (UPSC)', 'polity', '🇮🇳', 'Governance, constitutional amendments, public policy, and national developments'),

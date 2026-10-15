@@ -146,6 +146,17 @@ class DatabaseManager:
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE IF NOT EXISTS quiz_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            category_name TEXT NOT NULL,
+            score INTEGER NOT NULL,
+            total_questions INTEGER NOT NULL DEFAULT 5,
+            percentage REAL NOT NULL,
+            time_taken_seconds INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
         INSERT OR IGNORE INTO categories (id, name, slug, icon, description) VALUES
         (1, 'National & Polity (UPSC)', 'polity', '🇮🇳', 'Governance, constitutional amendments, public policy, and national developments'),
         (2, 'International Relations', 'world', '🌍', 'Geopolitics, multilateral summits, treaties, and global diplomacy'),
@@ -446,5 +457,64 @@ class DatabaseManager:
             'rubric_averages': rubric_averages,
             'timeline': timeline
         }
+
+    def save_quiz_result(self, user_id, category_name, score, total_questions=5, time_taken_seconds=0):
+        percentage = round((score / max(1, total_questions)) * 100, 2)
+        if self.is_mysql:
+            conn = self.get_mysql_conn()
+            if conn:
+                try:
+                    with conn.cursor() as cursor:
+                        cursor.execute("""
+                            INSERT INTO quiz_results (user_id, category_name, score, total_questions, percentage, time_taken_seconds)
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                        """, (user_id, category_name, score, total_questions, percentage, time_taken_seconds))
+                    conn.commit()
+                    conn.close()
+                    return {'success': True, 'score': score, 'percentage': percentage}
+                except Exception as e:
+                    return {'success': False, 'message': str(e)}
+
+        conn = self.get_sqlite_conn()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO quiz_results (user_id, category_name, score, total_questions, percentage, time_taken_seconds)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (user_id, category_name, score, total_questions, percentage, time_taken_seconds))
+            conn.commit()
+            conn.close()
+            return {'success': True, 'score': score, 'percentage': percentage}
+        except Exception as e:
+            return {'success': False, 'message': str(e)}
+
+    def get_quiz_history(self, user_id=None, limit=20):
+        if self.is_mysql:
+            conn = self.get_mysql_conn()
+            if conn:
+                try:
+                    with conn.cursor() as cursor:
+                        if user_id:
+                            cursor.execute("SELECT * FROM quiz_results WHERE user_id = %s ORDER BY created_at DESC LIMIT %s", (user_id, limit))
+                        else:
+                            cursor.execute("SELECT * FROM quiz_results ORDER BY created_at DESC LIMIT %s", (limit,))
+                        res = cursor.fetchall()
+                    conn.close()
+                    return res or []
+                except Exception:
+                    pass
+
+        conn = self.get_sqlite_conn()
+        try:
+            cursor = conn.cursor()
+            if user_id:
+                cursor.execute("SELECT * FROM quiz_results WHERE user_id = ? ORDER BY created_at DESC LIMIT ?", (user_id, limit))
+            else:
+                cursor.execute("SELECT * FROM quiz_results ORDER BY created_at DESC LIMIT ?", (limit,))
+            rows = [dict(r) for r in cursor.fetchall()]
+            conn.close()
+            return rows
+        except Exception:
+            return []
 
 db_manager = DatabaseManager()

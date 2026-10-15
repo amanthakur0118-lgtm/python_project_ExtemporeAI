@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
         prep: document.getElementById('view-prep'),
         arena: document.getElementById('view-arena'),
         results: document.getElementById('view-results'),
-        analytics: document.getElementById('view-analytics')
+        analytics: document.getElementById('view-analytics'),
+        quiz: document.getElementById('view-quiz')
     };
 
     const navButtons = document.querySelectorAll('.nav-btn');
@@ -89,6 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (viewName === 'analytics') {
             loadAnalyticsData();
             loadHistoryTable();
+        } else if (viewName === 'quiz') {
+            resetQuizToLobby();
+            loadQuizHistory();
         }
     }
 
@@ -1036,6 +1040,335 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+
+
+    // ==========================================================
+    // DAILY CURRENT AFFAIRS MCQ QUIZ CONTROLLER
+    // ==========================================================
+    const quizLobbyPanel = document.getElementById('quiz-lobby-panel');
+    const quizActivePanel = document.getElementById('quiz-active-panel');
+    const quizScorecardPanel = document.getElementById('quiz-scorecard-panel');
+    const quizCatCards = document.querySelectorAll('.quiz-cat-card');
+    const btnStartQuiz = document.getElementById('btn-start-quiz');
+    const quizQCounter = document.getElementById('quiz-q-counter');
+    const quizCatBadge = document.getElementById('quiz-cat-badge');
+    const quizTimerBadge = document.getElementById('quiz-timer-badge');
+    const quizProgressFill = document.getElementById('quiz-progress-bar-fill');
+    const quizQuestionStatement = document.getElementById('quiz-question-statement');
+    const quizOptionsGrid = document.getElementById('quiz-options-grid');
+    const quizExplanationBox = document.getElementById('quiz-explanation-box');
+    const quizExplanationHeader = document.getElementById('quiz-explanation-header');
+    const quizExplanationText = document.getElementById('quiz-explanation-text');
+    const btnQuizNext = document.getElementById('btn-quiz-next');
+    const btnQuizExit = document.getElementById('btn-quiz-exit');
+    const btnQuizRetry = document.getElementById('btn-quiz-retry');
+    const btnQuizGoExtempore = document.getElementById('btn-quiz-go-extempore');
+    const quizHistoryTableBody = document.getElementById('quiz-history-table-body');
+
+    const quizState = {
+        category: 'polity',
+        categoryName: 'National & Polity (UPSC)',
+        questions: [],
+        currentIndex: 0,
+        userAnswers: {},
+        startTime: 0,
+        questionTimer: null,
+        questionSecondsRemaining: 45
+    };
+
+    function resetQuizToLobby() {
+        if (quizState.questionTimer) {
+            clearInterval(quizState.questionTimer);
+            quizState.questionTimer = null;
+        }
+        if (quizLobbyPanel) quizLobbyPanel.style.display = 'block';
+        if (quizActivePanel) quizActivePanel.style.display = 'none';
+        if (quizScorecardPanel) quizScorecardPanel.style.display = 'none';
+    }
+
+    quizCatCards.forEach(card => {
+        card.addEventListener('click', () => {
+            quizCatCards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            quizState.category = card.dataset.slug || 'polity';
+            quizState.categoryName = card.dataset.name || 'Current Affairs';
+        });
+    });
+
+    if (btnStartQuiz) {
+        btnStartQuiz.addEventListener('click', async () => {
+            btnStartQuiz.disabled = true;
+            btnStartQuiz.textContent = '⚡ Formulating Current Affairs MCQs...';
+
+            try {
+                const resp = await fetch(`/api/quiz?category=${quizState.category}`);
+                const data = await resp.json();
+
+                if (data.questions && data.questions.length > 0) {
+                    quizState.questions = data.questions;
+                    quizState.currentIndex = 0;
+                    quizState.userAnswers = {};
+                    quizState.startTime = Date.now();
+
+                    if (quizLobbyPanel) quizLobbyPanel.style.display = 'none';
+                    if (quizActivePanel) quizActivePanel.style.display = 'block';
+                    if (quizScorecardPanel) quizScorecardPanel.style.display = 'none';
+
+                    renderQuizQuestion();
+                } else {
+                    alert('Unable to load quiz questions. Please try again.');
+                }
+            } catch (e) {
+                alert('Connection error loading quiz.');
+            } finally {
+                btnStartQuiz.disabled = false;
+                btnStartQuiz.textContent = 'Start 5-Question Drill 🚀';
+            }
+        });
+    }
+
+    function renderQuizQuestion() {
+        if (quizState.questionTimer) {
+            clearInterval(quizState.questionTimer);
+        }
+
+        const q = quizState.questions[quizState.currentIndex];
+        if (!q) return;
+
+        const totalQ = quizState.questions.length;
+        const currentQNum = quizState.currentIndex + 1;
+
+        if (quizQCounter) quizQCounter.textContent = `Question ${currentQNum} of ${totalQ}`;
+        if (quizCatBadge) quizCatBadge.textContent = `Domain: ${quizState.categoryName}`;
+        if (quizProgressFill) quizProgressFill.style.width = `${(currentQNum / totalQ) * 100}%`;
+        if (quizQuestionStatement) quizQuestionStatement.textContent = q.question;
+        if (quizExplanationBox) quizExplanationBox.style.display = 'none';
+        if (btnQuizNext) {
+            btnQuizNext.style.display = 'none';
+            btnQuizNext.textContent = (currentQNum === totalQ) ? 'Finish & View Scorecard 🏁' : 'Next Question →';
+        }
+
+        // Render 4 option cards
+        if (quizOptionsGrid) {
+            quizOptionsGrid.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+
+            q.options.forEach((optText, optIdx) => {
+                const optCard = document.createElement('div');
+                optCard.className = 'quiz-option-card';
+                optCard.innerHTML = `
+                    <div class="quiz-opt-letter">${letters[optIdx]}</div>
+                    <div class="quiz-opt-text">${optText}</div>
+                `;
+
+                optCard.addEventListener('click', () => {
+                    handleOptionSelect(optIdx, q);
+                });
+
+                quizOptionsGrid.appendChild(optCard);
+            });
+        }
+
+        // 45s countdown timer per question
+        quizState.questionSecondsRemaining = 45;
+        updateQuizTimerDisplay();
+        quizState.questionTimer = setInterval(() => {
+            quizState.questionSecondsRemaining--;
+            updateQuizTimerDisplay();
+            if (quizState.questionSecondsRemaining <= 0) {
+                clearInterval(quizState.questionTimer);
+                // Time's up: auto select null and reveal answer
+                handleOptionSelect(-1, q);
+            }
+        }, 1000);
+    }
+
+    function updateQuizTimerDisplay() {
+        if (!quizTimerBadge) return;
+        const s = quizState.questionSecondsRemaining;
+        quizTimerBadge.textContent = `00:${s < 10 ? '0' : ''}${s}`;
+        if (s <= 10) {
+            quizTimerBadge.className = 'live-timer-badge danger';
+        } else if (s <= 20) {
+            quizTimerBadge.className = 'live-timer-badge warning';
+        } else {
+            quizTimerBadge.className = 'live-timer-badge';
+        }
+    }
+
+    function handleOptionSelect(selectedIdx, question) {
+        if (quizState.questionTimer) {
+            clearInterval(quizState.questionTimer);
+        }
+
+        quizState.userAnswers[question.id] = selectedIdx;
+        const cards = quizOptionsGrid ? quizOptionsGrid.querySelectorAll('.quiz-option-card') : [];
+        cards.forEach((c, idx) => {
+            c.style.pointerEvents = 'none';
+            if (idx === question.correct_index) {
+                c.classList.add('correct');
+            } else if (idx === selectedIdx) {
+                c.classList.add('incorrect');
+            }
+        });
+
+        const isCorrect = (selectedIdx === question.correct_index);
+        const letters = ['A', 'B', 'C', 'D'];
+        const correctLetter = letters[question.correct_index];
+
+        if (quizExplanationBox && quizExplanationHeader && quizExplanationText) {
+            quizExplanationBox.style.display = 'block';
+            if (selectedIdx === -1) {
+                quizExplanationHeader.innerHTML = `⏱️ <span style="color:var(--accent-rose);">Time's Up!</span> Correct Answer: <b>Option ${correctLetter}</b>`;
+            } else if (isCorrect) {
+                quizExplanationHeader.innerHTML = `✅ <span style="color:var(--accent-emerald);">Correct!</span> Well done.`;
+            } else {
+                quizExplanationHeader.innerHTML = `❌ <span style="color:var(--accent-rose);">Incorrect.</span> Correct Answer is <b>Option ${correctLetter}</b>`;
+            }
+            quizExplanationText.textContent = question.explanation;
+        }
+
+        if (btnQuizNext) {
+            btnQuizNext.style.display = 'inline-flex';
+        }
+    }
+
+    if (btnQuizNext) {
+        btnQuizNext.addEventListener('click', async () => {
+            const nextIdx = quizState.currentIndex + 1;
+            if (nextIdx < quizState.questions.length) {
+                quizState.currentIndex = nextIdx;
+                renderQuizQuestion();
+            } else {
+                // Submit quiz
+                btnQuizNext.disabled = true;
+                btnQuizNext.textContent = 'Saving & Scoring Drill...';
+                await submitQuizSession();
+                btnQuizNext.disabled = false;
+            }
+        });
+    }
+
+    async function submitQuizSession() {
+        const timeTaken = Math.max(1, Math.round((Date.now() - quizState.startTime) / 1000));
+        try {
+            const resp = await fetch('/api/quiz/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    category: quizState.categoryName,
+                    answers: quizState.userAnswers,
+                    questions: quizState.questions,
+                    time_taken: timeTaken
+                })
+            });
+
+            const result = await resp.json();
+            renderQuizScorecard(result, timeTaken);
+        } catch (e) {
+            alert('Failed to submit quiz.');
+        }
+    }
+
+    function renderQuizScorecard(res, timeTaken) {
+        if (quizActivePanel) quizActivePanel.style.display = 'none';
+        if (quizScorecardPanel) quizScorecardPanel.style.display = 'block';
+
+        const finalScoreVal = document.getElementById('quiz-final-score-val');
+        const finalTier = document.getElementById('quiz-final-tier');
+        const finalMeta = document.getElementById('quiz-final-meta');
+        const reviewList = document.getElementById('quiz-review-list');
+
+        if (finalScoreVal) finalScoreVal.textContent = res.score;
+        if (finalTier) {
+            finalTier.textContent = res.tier || 'Quiz Completed!';
+            if (res.percentage >= 80) finalTier.style.color = 'var(--accent-emerald)';
+            else if (res.percentage >= 60) finalTier.style.color = '#818cf8';
+            else if (res.percentage >= 40) finalTier.style.color = 'var(--accent-amber)';
+            else finalTier.style.color = 'var(--accent-rose)';
+        }
+
+        if (finalMeta) {
+            finalMeta.textContent = `Accuracy: ${res.percentage}% • Total Time: ${timeTaken} seconds`;
+        }
+
+        if (reviewList && res.breakdown) {
+            reviewList.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+
+            res.breakdown.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = `quiz-review-card ${item.is_correct ? 'correct-review' : 'incorrect-review'}`;
+
+                const userText = item.user_choice !== null && item.user_choice !== -1 && item.user_choice !== undefined
+                    ? `Option ${letters[item.user_choice]} (${item.options[item.user_choice]})`
+                    : 'Unanswered / Timed Out';
+                const correctText = `Option ${letters[item.correct_index]} (${item.options[item.correct_index]})`;
+
+                card.innerHTML = `
+                    <div style="font-weight:700;font-size:0.95rem;color:var(--text-primary);">
+                        ${idx + 1}. ${item.question}
+                    </div>
+                    <div style="font-size:0.85rem;display:flex;gap:1.5rem;flex-wrap:wrap;margin:0.25rem 0;">
+                        <span>Your Pick: <b style="color:${item.is_correct ? 'var(--accent-emerald)' : 'var(--accent-rose)'};">${userText}</b></span>
+                        <span>Correct: <b style="color:var(--accent-emerald);">${correctText}</b></span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-secondary);background:var(--bg-input);padding:0.6rem 0.85rem;border-radius:var(--radius-sm);line-height:1.45;">
+                        <b>Context:</b> ${item.explanation}
+                    </div>
+                `;
+                reviewList.appendChild(card);
+            });
+        }
+    }
+
+    async function loadQuizHistory() {
+        if (!quizHistoryTableBody) return;
+        try {
+            const resp = await fetch('/api/quiz/history');
+            const data = await resp.json();
+
+            if (data.history && data.history.length > 0) {
+                quizHistoryTableBody.innerHTML = '';
+                data.history.forEach((row, i) => {
+                    const tr = document.createElement('tr');
+                    const dateStr = row.created_at ? String(row.created_at).substring(0, 16) : '-';
+                    tr.innerHTML = `
+                        <td><b>#${row.id || (i + 1)}</b></td>
+                        <td>${row.category_name}</td>
+                        <td><span class="badge-orator">${row.score} / ${row.total_questions || 5}</span></td>
+                        <td><b>${row.percentage}%</b></td>
+                        <td style="color:var(--text-muted);">${dateStr}</td>
+                    `;
+                    quizHistoryTableBody.appendChild(tr);
+                });
+            } else {
+                quizHistoryTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:1rem;">No quiz drills recorded yet. Take your first quiz!</td></tr>';
+            }
+        } catch (e) {}
+    }
+
+    if (btnQuizExit) {
+        btnQuizExit.addEventListener('click', () => {
+            if (confirm('Exit quiz and return to Quiz Lobby?')) {
+                resetQuizToLobby();
+                loadQuizHistory();
+            }
+        });
+    }
+
+    if (btnQuizRetry) {
+        btnQuizRetry.addEventListener('click', () => {
+            resetQuizToLobby();
+            loadQuizHistory();
+        });
+    }
+
+    if (btnQuizGoExtempore) {
+        btnQuizGoExtempore.addEventListener('click', () => {
+            switchView('launchpad');
+        });
+    }
 
     // Initial Load
     fetchHeadlines('polity');
