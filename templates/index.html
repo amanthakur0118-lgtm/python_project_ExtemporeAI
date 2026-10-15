@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExtemporeAI — AI-Powered Impromptu & Current Affairs Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1.3">
+    <link rel="alternate icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}?v=1.3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.3">
+</head>
+<body>
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="navbar">
+        <a href="#" class="brand">
+            <div class="brand-icon">🎙️</div>
+            <div>
+                <span>Extempore<span style="color:#818cf8;">AI</span></span>
+                <span class="brand-badge">UPSC & Debate</span>
+            </div>
+        </a>
+
+        <nav class="nav-links">
+            <button class="nav-btn active" data-view="launchpad">
+                <span>⚡</span> Arena Launchpad
+            </button>
+            <button class="nav-btn" data-view="analytics">
+                <span>📊</span> Progress & MySQL Log
+            </button>
+            <button id="btn-fresh-entry" class="nav-btn" style="color:var(--accent-emerald);" title="Start a fresh practice session">
+                <span>➕</span> Fresh Entry
+            </button>
+        </nav>
+
+        <div class="nav-actions">
+            <button id="btn-auth-trigger" class="btn-secondary" style="padding:0.4rem 0.85rem;font-size:0.82rem;display:flex;align-items:center;gap:0.4rem;">
+                <span>👤</span> Sign In
+            </button>
+            <div id="user-profile-badge" style="display:none;align-items:center;gap:0.5rem;font-size:0.85rem;background:var(--bg-input);padding:0.3rem 0.75rem;border-radius:var(--radius-full);border:1px solid var(--border);">
+                <span>👤</span> <span id="user-display-name" style="font-weight:600;color:var(--text-primary);">Aman</span>
+                <button id="btn-logout" style="background:none;border:none;color:var(--accent-rose);cursor:pointer;font-size:0.75rem;font-weight:600;" title="Sign Out">(Logout)</button>
+            </div>
+            <div id="ai-status-pill" class="db-status-pill" style="border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.12); color: #818cf8;" title="Click to configure Gemini API Key or AI Model">
+                <span class="pulse-dot" style="background:#818cf8;"></span>
+                <span id="ai-status-text">AI: Strict Rubric</span>
+            </div>
+            <div id="db-status-pill" class="db-status-pill" title="Click to view or edit MySQL connection settings">
+                <span class="pulse-dot"></span>
+                <span id="db-status-text">Checking Database...</span>
+            </div>
+            <button id="btn-theme-toggle" class="icon-btn" title="Toggle Light/Dark Theme">🌙</button>
+        </div>
+    </header>
+
+    <main class="main-content">
+
+        <!-- LIVE NEWS TICKER BANNER -->
+        <div class="ticker-banner">
+            <span class="ticker-tag">Live News Feed</span>
+            <div class="ticker-text-wrapper">
+                <span id="ticker-headline-text">Connecting to real-time global and national news streams...</span>
+            </div>
+        </div>
+
+        <!-- ==========================================================
+             VIEW 1: LAUNCHPAD (TOPIC & SESSION SETUP)
+             ========================================================== -->
+        <section id="view-launchpad" class="view-section active-view">
+            <div class="hero-header">
+                <h1>Master Impromptu Speaking with Live Current Affairs</h1>
+                <p>Simulate real-world time pressure for UPSC interviews, debate competitions, and extempore rounds with AI-graded rubric feedback.</p>
+            </div>
+
+            <div class="section-title">
+                <span>1️⃣ Choose Your Subject Domain</span>
+            </div>
+
+            <div class="category-grid">
+                <div class="category-card selected" data-slug="polity" data-name="National & Polity (UPSC)">
+                    <div class="cat-icon">🇮🇳</div>
+                    <div class="cat-title">National & Polity</div>
+                    <div class="cat-desc">Governance, constitutional amendments, bills, judicial rulings, and civil services focus.</div>
+                </div>
+
+                <div class="category-card" data-slug="world" data-name="International Relations">
+                    <div class="cat-icon">🌍</div>
+                    <div class="cat-title">International Affairs</div>
+                    <div class="cat-desc">Geopolitics, UN summits, bilateral diplomacy, security treaties, and global supply chains.</div>
+                </div>
+
+                <div class="category-card" data-slug="tech" data-name="Tech, AI & Cybersecurity">
+                    <div class="cat-icon">💻</div>
+                    <div class="cat-title">Tech, AI & Cyber</div>
+                    <div class="cat-desc">AI safety, digital sovereignty, cyber warfare, cloud systems, and quantum breakthroughs.</div>
+                </div>
+
+                <div class="category-card" data-slug="economy" data-name="Economy & Development">
+                    <div class="cat-icon">📈</div>
+                    <div class="cat-title">Economy & Markets</div>
+                    <div class="cat-desc">Macroeconomic policy, inflation, industrial growth, trade deficits, and green transition.</div>
+                </div>
+
+                <div class="category-card" data-slug="sports" data-name="Sports & Society">
+                    <div class="cat-icon">⚽</div>
+                    <div class="cat-title">Sports & Society</div>
+                    <div class="cat-desc">Institutional reforms, athlete welfare, ethics in sports, and cultural heritage.</div>
+                </div>
+
+                <div class="category-card" data-slug="general" data-name="General / Live Mix">
+                    <div class="cat-icon">🎲</div>
+                    <div class="cat-title">Surprise Me (Live Mix)</div>
+                    <div class="cat-desc">Eclectic real-time breaking events to test spontaneous adaptability and lateral thinking.</div>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <span>2️⃣ Choose Headline or Enter Custom Fresh Topic</span>
+            </div>
+
+            <div class="topic-picker-container">
+                <div class="pill-selector" style="margin-bottom:1rem;max-width:440px;">
+                    <button type="button" id="tab-topic-rss" class="pill-option active" style="flex:1;">📰 Live Breaking News</button>
+                    <button type="button" id="tab-topic-custom" class="pill-option" style="flex:1;">✍️ Custom Fresh Entry</button>
+                </div>
+
+                <!-- TAB A: LIVE HEADLINES -->
+                <div id="panel-topic-rss">
+                    <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.5rem;">
+                        Click any real headline below, or leave default for an AI-curated challenge:
+                    </p>
+                    <div id="headlines-list" class="headlines-list">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- TAB B: CUSTOM FRESH ENTRY -->
+                <div id="panel-topic-custom" style="display:none;">
+                    <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.5rem;">
+                        Type your own custom debate motion, editorial topic, or interview question:
+                    </p>
+                    <textarea id="custom-topic-input" class="form-control" rows="2" placeholder="e.g. Is Artificial Intelligence exacerbating wealth inequality in emerging economies?" style="font-size:0.95rem;resize:vertical;margin-bottom:0.75rem;"></textarea>
+                    
+                    <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.4rem;font-weight:600;">⚡ Quick Trending Themes (Click to populate):</div>
+                    <div class="preset-chips-container" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.5rem;">
+                        <button type="button" class="preset-chip" data-topic="Simultaneous Elections (One Nation One Election): Constitutional and Federal Implications">🇮🇳 One Nation One Election</button>
+                        <button type="button" class="preset-chip" data-topic="Artificial Intelligence, Generative Automation, and White-Collar Employment">🤖 AI & Job Market</button>
+                        <button type="button" class="preset-chip" data-topic="Uniform Civil Code: Balancing Pluralism and Gender Justice">⚖️ Uniform Civil Code</button>
+                        <button type="button" class="preset-chip" data-topic="Climate Finance and Common But Differentiated Responsibilities">🌱 Climate Justice & COP</button>
+                        <button type="button" class="preset-chip" data-topic="Digital Public Infrastructure (DPI) as an Instrument of Global Diplomacy">🌐 Digital Sovereignty</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <span>3️⃣ Extempore Simulation Parameters</span>
+            </div>
+
+            <div class="config-card">
+                <div class="config-group">
+                    <span class="config-label">Preparation Time (Thinking)</span>
+                    <div class="pill-selector">
+                        <button class="pill-option" data-prep="30">30s (Rapid)</button>
+                        <button class="pill-option" data-prep="45">45s</button>
+                        <button class="pill-option active" data-prep="60">60s (Standard)</button>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <span class="config-label">Answer Window (Speaking/Typing)</span>
+                    <div class="pill-selector">
+                        <button class="pill-option" data-answer="180">3 Mins (Speed Drill)</button>
+                        <button class="pill-option active" data-answer="300">5 Mins (UPSC Standard)</button>
+                    </div>
+                </div>
+
+                <button id="btn-launch" class="btn-launch">
+                    Generate Topic & Start Prep ⚡
+                </button>
+            </div>
+        </section>
+
+        <!-- ==========================================================
+             VIEW 2: PREPARATION PHASE (30s - 60s)
+             ========================================================== -->
+        <section id="view-prep" class="view-section">
+            <div class="prep-container">
+                <div class="question-box">
+                    <div id="prep-source-tag" class="question-source-tag">📰 Source: The Hindu / Reuters</div>
+                    <div id="prep-question-text" class="question-text">
+                        Loading challenge question...
+                    </div>
+                    <div id="prep-headline-snippet" style="font-size:0.85rem;color:var(--text-muted);margin-top:0.75rem;"></div>
+                </div>
+
+                <div class="radial-timer-wrapper">
+                    <svg class="radial-timer-svg" width="200" height="200">
+                        <circle class="radial-timer-bg" cx="100" cy="100" r="90" />
+                        <circle id="radial-timer-progress" class="radial-timer-progress" cx="100" cy="100" r="90" />
+                    </svg>
+                    <div class="radial-timer-display">
+                        <div id="prep-seconds-display" class="timer-seconds">60</div>
+                        <div class="timer-subtext">Prep Window</div>
+                    </div>
+                </div>
+
+                <div class="scratchpad-container">
+                    <div class="scratchpad-header">
+                        <span>📝 Rapid Mind-Map Scratchpad (Optional Notes)</span>
+                        <span style="font-size:0.8rem;color:var(--text-muted);">Organize: 1. Core Thesis | 2. Key Dimensions | 3. Way Forward</span>
+                    </div>
+                    <textarea id="scratchpad-notes" class="scratchpad-textarea" placeholder="Jot bullet points here while you think (these will carry into the answer arena)..."></textarea>
+                </div>
+
+                <div style="display:flex;gap:1rem;justify-content:center;align-items:center;margin-top:1rem;flex-wrap:wrap;">
+                    <button id="btn-skip-prep" class="btn-skip-prep">
+                        I'm Ready Now — Start Answer Window →
+                    </button>
+                    <button id="btn-cancel-prep" class="btn-secondary" style="padding:0.75rem 1.25rem;font-size:0.9rem;" title="Cancel and choose a different topic">
+                        🔄 Cancel & Fresh Entry
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================
+             VIEW 3: LIVE EXTEMPORE ARENA (5-MINUTE ANSWER WINDOW)
+             ========================================================== -->
+        <section id="view-arena" class="view-section">
+            <!-- Pinned Question Header -->
+            <div class="arena-header-pinned">
+                <div class="arena-question-snippet">
+                    <span style="color:var(--primary);font-weight:700;">PROMPT: </span>
+                    <span id="arena-question-snippet">Prompt text...</span>
+                </div>
+                <div id="arena-timer-badge" class="live-timer-badge">05:00</div>
+            </div>
+
+            <!-- Pacing Guide Bar -->
+            <div class="pacing-container">
+                <div class="pacing-bar">
+                    <div id="pacing-seg-1" class="pacing-segment pacing-seg-1 active"></div>
+                    <div id="pacing-seg-2" class="pacing-segment pacing-seg-2"></div>
+                    <div id="pacing-seg-3" class="pacing-segment pacing-seg-3"></div>
+                </div>
+                <div class="pacing-labels">
+                    <span id="pacing-lbl-1" class="pacing-label active">Stage 1: Context & Stance (0 - 1m)</span>
+                    <span id="pacing-lbl-2" class="pacing-label">Stage 2: Core Analysis & Dimensions (1m - 3.5m)</span>
+                    <span id="pacing-lbl-3" class="pacing-label">Stage 3: Way Forward & Synthesis (3.5m - 5m)</span>
+                </div>
+            </div>
+
+            <!-- Workspace Card -->
+            <div class="workspace-card">
+                <div class="workspace-toolbar">
+                    <div class="input-mode-toggles">
+                        <button class="mode-toggle-btn active" data-mode="text">
+                            ⌨️ Keyboard Typing
+                        </button>
+                        <button class="mode-toggle-btn" data-mode="voice">
+                            🎙️ Speech-to-Text (Voice)
+                        </button>
+                    </div>
+
+                    <div class="live-metrics-bar">
+                        <span id="live-word-count">0 words</span>
+                        <span>•</span>
+                        <span id="live-wpm">0 WPM</span>
+                    </div>
+                </div>
+
+                <!-- Voice Recording Panel -->
+                <div id="voice-panel" class="voice-panel">
+                    <div class="voice-wave-container">
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                    </div>
+                    <p id="mic-status-text" style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:0.75rem;">
+                        Click below to start live microphone transcription.
+                    </p>
+                    <button id="btn-mic-toggle" class="btn-mic-record">
+                        🎙️ Start Voice Input
+                    </button>
+                </div>
+
+                <div id="arena-scratchpad-reminder" style="font-size:0.8rem;color:var(--accent-cyan);margin-bottom:0.5rem;"></div>
+
+                <textarea id="answer-textarea" class="answer-textarea" placeholder="Begin delivering your response here... Speak through microphone or type with structured paragraphs (Intro, Analysis, Conclusion)."></textarea>
+
+                <div class="arena-footer" style="margin-top:1rem;">
+                    <div class="auto-save-status">
+                        <span style="color:var(--accent-emerald);">●</span> Auto-saved to local buffer
+                    </div>
+                    <div style="display:flex;gap:0.75rem;align-items:center;">
+                        <button id="btn-arena-fresh-entry" class="btn-secondary" style="padding:0.85rem 1.1rem;font-size:0.9rem;" title="Discard current attempt and start fresh">
+                            🔄 Fresh Entry
+                        </button>
+                        <button id="btn-submit-answer" class="btn-submit-answer">
+                            Submit & Grade Answer 🚀
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================
+             VIEW 4: RESULTS & RUBRIC SCORECARD (50 POINTS TOTAL)
+             ========================================================== -->
+        <section id="view-results" class="view-section">
+            <div class="results-container">
+                <!-- Hero Score Card -->
+                <div class="results-hero-card">
+                    <div class="score-display-wrapper">
+                        <div class="score-circle-dial">
+                            <span id="total-score-val" class="total-score-num">42</span>
+                            <span class="total-score-max">/ 50</span>
+                        </div>
+                        <div class="score-title-text">
+                            <h2>Performance Scorecard</h2>
+                            <div id="performance-tier-badge" class="badge-orator">Distinguished Orator</div>
+                            <div id="evaluator-badge" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.35rem;">
+                                Graded by Rubric Examiner Engine
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-actions">
+                        <button id="btn-practice-another" class="btn-launch" style="padding:0.75rem 1.5rem;font-size:0.95rem;">
+                            Practice Another Topic ⚡
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-title">
+                    <span>📊 5-Dimensional Rubric Assessment (10 Points Each)</span>
+                </div>
+
+                <!-- 5-Rubric Breakdown Grid -->
+                <div id="rubric-cards-grid" class="rubric-grid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <!-- Overall Feedback & Model Framework -->
+                <div class="coaching-card">
+                    <h3>💡 Examiner Coaching Insights</h3>
+                    <p id="overall-feedback-text" style="color:var(--text-secondary);line-height:1.6;font-size:0.95rem;"></p>
+
+                    <h3 style="margin-top:1.5rem;">🏛️ Recommended UPSC Extempore Structure</h3>
+                    <div id="model-answer-outline" class="model-outline-box"></div>
+
+                    <h3 style="margin-top:1.5rem;">📜 Your Submitted Answer Transcript</h3>
+                    <div id="results-candidate-answer" class="model-outline-box" style="color:var(--text-primary);max-height:200px;overflow-y:auto;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================
+             VIEW 5: PROGRESS & MYSQL LOG TABLE
+             ========================================================== -->
+        <section id="view-analytics" class="view-section">
+            <div class="hero-header" style="margin-bottom:1.5rem;">
+                <h1>Performance Analytics & Practice Log</h1>
+                <p>All sessions and rubric breakdowns are permanently cataloged in your MySQL database.</p>
+            </div>
+
+            <!-- Stats Overview Cards -->
+            <div class="stats-overview-grid">
+                <div class="stat-box">
+                    <div id="stat-total-sessions" class="stat-val">0</div>
+                    <div class="stat-lbl">Completed Sessions</div>
+                </div>
+                <div class="stat-box">
+                    <div id="stat-avg-score" class="stat-val">0 / 50</div>
+                    <div class="stat-lbl">Average Score</div>
+                </div>
+                <div class="stat-box">
+                    <div id="stat-total-words" class="stat-val">0</div>
+                    <div class="stat-lbl">Total Words Articulated</div>
+                </div>
+                <div class="stat-box">
+                    <div id="stat-streak" class="stat-val">0 Days</div>
+                    <div class="stat-lbl">Active Streak</div>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <span>🗄️ MySQL Practice History Table</span>
+            </div>
+
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Category</th>
+                            <th>Extempore Question</th>
+                            <th>Score (/50)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <!-- Populated dynamically via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- DATABASE CONFIGURATION MODAL -->
+    <div id="db-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h3>🗄️ MySQL Database Settings</h3>
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1.25rem;">
+                Configure connection to your local MySQL 8.0 server. If not connected, the app automatically runs on a local SQLite mirror so your practice is never interrupted.
+            </p>
+
+            <div class="form-group">
+                <label>Host</label>
+                <input type="text" id="db-host" class="form-control" value="localhost">
+            </div>
+
+            <div class="form-group">
+                <label>Port</label>
+                <input type="number" id="db-port" class="form-control" value="3306">
+            </div>
+
+            <div class="form-group">
+                <label>User</label>
+                <input type="text" id="db-user" class="form-control" value="root">
+            </div>
+
+            <div class="form-group">
+                <label>MySQL Password</label>
+                <input type="password" id="db-password" class="form-control" placeholder="Enter root password">
+            </div>
+
+            <div class="form-group">
+                <label>Database Name</label>
+                <input type="text" id="db-name" class="form-control" value="extempore_db">
+            </div>
+
+            <div class="modal-footer">
+                <button id="btn-close-db-modal" class="btn-secondary">Cancel</button>
+                <button id="btn-save-db-config" class="btn-launch" style="padding:0.65rem 1.25rem;font-size:0.9rem;">
+                    Connect & Save to MySQL
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SESSION INSPECTION MODAL -->
+    <div id="session-detail-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:700px;">
+            <h3 id="modal-session-title">Session Review</h3>
+            
+            <div style="margin-bottom:1rem;">
+                <span style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;">Question:</span>
+                <p id="modal-session-question" style="font-weight:600;margin-top:0.25rem;"></p>
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <span style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;">Overall Score:</span>
+                <p id="modal-session-score" style="font-size:1.2rem;font-weight:700;color:var(--accent-emerald);"></p>
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <span style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;">Examiner Feedback:</span>
+                <p id="modal-session-fb" style="font-size:0.9rem;color:var(--text-secondary);margin-top:0.25rem;"></p>
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <span style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;">Transcript:</span>
+                <div id="modal-session-answer" style="background:var(--bg-input);padding:0.75rem;border-radius:var(--radius-sm);font-size:0.85rem;max-height:180px;overflow-y:auto;white-space:pre-line;margin-top:0.25rem;"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="btn-close-session-modal" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI ENGINE SETTINGS MODAL -->
+    <div id="ai-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h3>🧠 AI Grading Engine Settings</h3>
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1.25rem;">
+                Choose how answers are evaluated. By default, our <b>Strict Algorithmic Rubric Engine</b> detects gibberish, off-topic evasion, and scores rigorously offline. You can also connect your free <b>Google Gemini API Key</b> (Google AI Studio) for advanced LLM reasoning.
+            </p>
+
+            <div class="form-group">
+                <label>Current Evaluator Status</label>
+                <div id="ai-current-mode-badge" style="padding:0.6rem 0.85rem;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.9rem;font-weight:600;color:var(--text-primary);">
+                    Loading status...
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Gemini API Key (Optional)</label>
+                <input type="password" id="gemini-api-key-input" class="form-control" placeholder="AIzaSy...">
+                <small style="color:var(--text-muted);font-size:0.75rem;margin-top:0.35rem;display:block;">
+                    Get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#818cf8;text-decoration:underline;">Google AI Studio</a>. Leave empty to use the built-in Strict Rubric.
+                </small>
+            </div>
+
+            <div class="modal-footer">
+                <button id="btn-close-ai-modal" class="btn-secondary">Close</button>
+                <button id="btn-save-ai-config" class="btn-launch" style="padding:0.65rem 1.25rem;font-size:0.9rem;">
+                    Save & Verify Key
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTHENTICATION MODAL (LOGIN / SIGN UP) -->
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:440px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+                <h3 id="auth-modal-title">Candidate Sign In</h3>
+                <button id="btn-close-auth-modal" style="background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;">&times;</button>
+            </div>
+
+            <div class="pill-selector" style="margin-bottom:1.25rem;">
+                <button id="tab-login" class="pill-option active" style="flex:1;">Sign In</button>
+                <button id="tab-register" class="pill-option" style="flex:1;">Create Account</button>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <form id="form-login">
+                <div class="form-group">
+                    <label>Username or Email</label>
+                    <input type="text" id="login-identifier" class="form-control" placeholder="e.g. aman or user@gmail.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+                </div>
+                <div id="auth-error-msg" style="color:var(--accent-rose);font-size:0.85rem;margin-bottom:0.75rem;display:none;"></div>
+                <button type="submit" id="btn-submit-login" class="btn-launch" style="width:100%;justify-content:center;margin-top:0.5rem;">
+                    Sign In 🚀
+                </button>
+            </form>
+
+            <!-- REGISTER FORM -->
+            <form id="form-register" style="display:none;">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="reg-username" class="form-control" placeholder="e.g. aman_aspirant" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address (Optional)</label>
+                    <input type="email" id="reg-email" class="form-control" placeholder="e.g. aman@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Password (min 6 characters)</label>
+                    <input type="password" id="reg-password" class="form-control" placeholder="••••••••" required>
+                </div>
+                <div id="reg-error-msg" style="color:var(--accent-rose);font-size:0.85rem;margin-bottom:0.75rem;display:none;"></div>
+                <button type="submit" id="btn-submit-register" class="btn-launch" style="width:100%;justify-content:center;margin-top:0.5rem;">
+                    Create Account & Sign In 🌟
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- SCRIPTS -->
+    <script src="{{ url_for('static', filename='js/timer.js') }}?v=1.3"></script>
+    <script src="{{ url_for('static', filename='js/speech.js') }}?v=1.3"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=1.3"></script>
+</body>
+</html>
