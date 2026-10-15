@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExtemporeAI - Project Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #090d16;
+        --card-bg: #111827;
+        --card-border: #1f2937;
+        --primary: #6366f1;
+        --cyan: #06b6d4;
+        --green: #10b981;
+        --gold: #f59e0b;
+        --text: #f9fafb;
+        --muted: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        overflow: hidden;
+        height: 100vh;
+        width: 100vw;
+    }
+    .deck-container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .slide {
+        display: none;
+        width: 90vw;
+        max-width: 1350px;
+        height: 82vh;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 3rem 4rem;
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .slide.active {
+        display: flex;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(12px) scale(0.99); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .slide-tag {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--cyan);
+        margin-bottom: 0.5rem;
+    }
+    .slide-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.2;
+    }
+    .slide-subtitle {
+        font-size: 1.05rem;
+        color: var(--muted);
+        margin-top: 0.4rem;
+    }
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin: 2rem 0;
+        flex: 1;
+        align-items: stretch;
+    }
+    .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+        margin: 2rem 0;
+        flex: 1;
+        align-items: stretch;
+    }
+    .card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+    .card.primary-border { border-top: 4px solid var(--primary); }
+    .card.cyan-border { border-top: 4px solid var(--cyan); }
+    .card.green-border { border-top: 4px solid var(--green); }
+    .card.gold-border { border-top: 4px solid var(--gold); }
+    .card.red-border { border-top: 4px solid #ef4444; }
+
+    .card-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .card-list {
+        list-style: none;
+    }
+    .card-list li {
+        font-size: 0.95rem;
+        color: var(--muted);
+        margin-bottom: 0.75rem;
+        line-height: 1.5;
+        position: relative;
+        padding-left: 1.4rem;
+    }
+    .card-list li::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: var(--cyan);
+        font-weight: bold;
+    }
+    .slide-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 1rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+    }
+    .controls {
+        position: fixed;
+        bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        z-index: 100;
+        background: rgba(17, 24, 39, 0.8);
+        backdrop-filter: blur(8px);
+        padding: 0.6rem 1.2rem;
+        border-radius: 9999px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .nav-btn {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 0.2rem 0.6rem;
+        border-radius: 6px;
+        transition: 0.2s;
+    }
+    .nav-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    .slide-counter {
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--cyan);
+    }
+    .progress-bar-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        z-index: 200;
+    }
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--cyan));
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+    .code-pill {
+        font-family: 'JetBrains Mono', monospace;
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div class="deck-container">
+
+    <!-- SLIDE 1: TITLE -->
+    <div class="slide active">
+        <div>
+            <div class="slide-tag">PROJECT PRESENTATION &bull; OCTOBER 2026</div>
+            <h1 class="slide-title" style="font-size: 3.5rem; margin-top: 1rem;">ExtemporeAI</h1>
+            <p class="slide-subtitle" style="font-size: 1.35rem; color: #cbd5e1; margin-top: 0.5rem;">
+                Real-Time AI-Powered Impromptu Speaking Practice & Current Affairs Evaluation Platform
+            </p>
+        </div>
+        <div class="card primary-border" style="margin: 2rem 0; padding: 2rem;">
+            <div style="font-size: 1.1rem; color: #fff; margin-bottom: 0.8rem;">
+                <strong>Developer</strong>: Aman &nbsp;|&nbsp; <strong>Track</strong>: Full-Stack AI & Public Speaking Coaching
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <span class="code-pill">Python 3.12 Flask</span>
+                <span class="code-pill">Google GenAI</span>
+                <span class="code-pill">Web Speech API</span>
+                <span class="code-pill">MySQL 8.0</span>
+                <span class="code-pill">SQLite Mirror</span>
+                <span class="code-pill">Vercel Serverless</span>
+            </div>
+            <div style="margin-top: 1.5rem; display: flex; gap: 2rem;">
+                <div>🌍 Live URL: <a href="https://aiextemporeapp.vercel.app" target="_blank" style="color: var(--cyan); text-decoration: none;">aiextemporeapp.vercel.app</a></div>
+                <div>🐙 GitHub: <a href="https://github.com/amanthakur0118-lgtm/python_project_ExtemporeAI" target="_blank" style="color: var(--gold); text-decoration: none;">amanthakur0118-lgtm/python_project_ExtemporeAI</a></div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>ExtemporeAI Presentation</span>
+            <span>Use Left / Right Arrow Keys to Navigate &bull; Press F for Fullscreen</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: PROBLEM STATEMENT -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">CONTEXT & CHALLENGES</div>
+            <h2 class="slide-title">The Problem: Impromptu Speaking & Interview Anxiety</h2>
+            <p class="slide-subtitle">Why traditional training fails candidates preparing for UPSC, SSB, and MBA interviews</p>
+        </div>
+        <div class="grid-3">
+            <div class="card red-border">
+                <div class="card-title">⚠️ The Extempore Bottleneck</div>
+                <ul class="card-list">
+                    <li>Crucial test in Civil Services, Defence (SSB), and MBA GD/PI admissions.</li>
+                    <li>Candidates freeze when asked to deliver spontaneous, structured 3-to-5 minute speeches.</li>
+                    <li>Panic pauses and unstructured rambling damage candidate confidence.</li>
+                </ul>
+            </div>
+            <div class="card red-border">
+                <div class="card-title">💸 Prohibitive Coaching Costs</div>
+                <ul class="card-list">
+                    <li>Human mentors cost upwards of $100/hour, inaccessible to most students.</li>
+                    <li>Peer feedback is subjective, unstructured, and lacks standard rubrics.</li>
+                    <li>Zero metric tracking for Words-Per-Minute, pauses, and factual relevance.</li>
+                </ul>
+            </div>
+            <div class="card red-border">
+                <div class="card-title">📰 Static Knowledge Gap</div>
+                <ul class="card-list">
+                    <li>Textbooks and past papers fail to reflect breaking global and legal events.</li>
+                    <li>Candidates struggle to connect breaking news to constitutional frameworks.</li>
+                    <li>No unified platform uniting news reading with speech delivery.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>Problem Formulation</span>
+            <span>Slide 2 of 13</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: SOLUTION -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">PRODUCT ARCHITECTURE</div>
+            <h2 class="slide-title">The Solution: ExtemporeAI Platform</h2>
+            <p class="slide-subtitle">An end-to-end intelligent coaching ecosystem combining live news, speech analytics, and rubric scoring</p>
+        </div>
+        <div class="grid-3">
+            <div class="card primary-border">
+                <div class="card-title">📰 Real-Time News & Synthesis</div>
+                <ul class="card-list">
+                    <li>Automated RSS engine ingests breaking stories across 6 strategic domains.</li>
+                    <li>Synthesizes multi-perspective UPSC debate motions with context dossiers.</li>
+                    <li>Dual modes: Breaking news topics or Custom Fresh Entry.</li>
+                </ul>
+            </div>
+            <div class="card cyan-border">
+                <div class="card-title">🎙️ Simulated Exam Arena</div>
+                <ul class="card-list">
+                    <li>60-second preparation phase with scratchpad brainstormer.</li>
+                    <li>5-minute timed speaking arena with in-browser Web Speech API.</li>
+                    <li>Real-time pacing speedometer (WPM gauge) & audio visualizer.</li>
+                </ul>
+            </div>
+            <div class="card green-border">
+                <div class="card-title">⚖️ 50-Point Rubric & Daily Quiz</div>
+                <ul class="card-list">
+                    <li>5 standardized dimensions: Factual Accuracy, Relevance, Structure, Depth, Pacing.</li>
+                    <li>Anti-hallucination guard severely penalizes incoherent or off-topic transcripts.</li>
+                    <li>Daily Current Affairs MCQ Quiz with instant educational rationales.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>Platform Overview</span>
+            <span>Slide 3 of 13</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: ARCHITECTURE -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">TECHNICAL ARCHITECTURE</div>
+            <h2 class="slide-title">3-Tier Resilient System Design</h2>
+            <p class="slide-subtitle">Clean separation of concerns built for performance, reliability, and serverless portability</p>
+        </div>
+        <div class="grid-3">
+            <div class="card primary-border">
+                <div class="card-title">🖥️ Tier 1: Client Layer</div>
+                <ul class="card-list">
+                    <li>Single-Page Application (SPA) with responsive CSS & dark/light theme.</li>
+                    <li>Web Speech API for continuous, low-latency speech recognition.</li>
+                    <li>Web Audio API sound synthesizers for exam chimes and buzzers.</li>
+                    <li>Dynamic SVG circular countdown timer and WPM speedometer.</li>
+                </ul>
+            </div>
+            <div class="card cyan-border">
+                <div class="card-title">⚙️ Tier 2: Application Layer</div>
+                <ul class="card-list">
+                    <li>Python 3.12 Flask REST controller with clean endpoint routing.</li>
+                    <li><span class="code-pill">news_service.py</span>: XML RSS news parser with caching.</li>
+                    <li><span class="code-pill">ai_service.py</span>: Question synthesis & 50-pt rubric engine.</li>
+                    <li><span class="code-pill">quiz_service.py</span>: 6-domain timed MCQ drill generator.</li>
+                </ul>
+            </div>
+            <div class="card green-border">
+                <div class="card-title">🗄️ Tier 3: Data Tier</div>
+                <ul class="card-list">
+                    <li>Primary Production: MySQL 8.0 relational schema with foreign keys.</li>
+                    <li>Zero-Setup Failover: Automatic SQLite 3 mirror in <span class="code-pill">database.py</span>.</li>
+                    <li>Serverless Portability: Dynamic write redirection to <span class="code-pill">/tmp/</span> on Vercel.</li>
+                    <li>Prevents read-only filesystem crashes in AWS Lambda / Vercel.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>System Engineering</span>
+            <span>Slide 4 of 13</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: NEWS ENGINE -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">INTELLIGENT CONTENT</div>
+            <h2 class="slide-title">Live News Ingestion & Topic Synthesis</h2>
+            <p class="slide-subtitle">Transforming raw real-time global news into analytical, multi-stakeholder debate motions</p>
+        </div>
+        <div class="grid-2">
+            <div class="card primary-border">
+                <div class="card-title">🌐 6 Strategic Knowledge Domains</div>
+                <ul class="card-list">
+                    <li><strong>National & Polity</strong>: Constitutional benches, electoral reforms, federalism.</li>
+                    <li><strong>International Relations</strong>: Bilateral treaties, Indo-Pacific diplomacy, UN resolutions.</li>
+                    <li><strong>Tech & Cyber Governance</strong>: AI ethics, semiconductor missions, data privacy.</li>
+                    <li><strong>Economy & Banking</strong>: Monetary policy, fiscal deficit, inflation, trade balances.</li>
+                    <li><strong>Sports & Society</strong>: Public health, grassroots sports, social equity initiatives.</li>
+                    <li><strong>General Mix</strong>: Cross-domain holistic synthesis across all subjects.</li>
+                </ul>
+            </div>
+            <div class="card cyan-border">
+                <div class="card-title">🧠 Prompt Formulation & Fresh Entry</div>
+                <ul class="card-list">
+                    <li><strong>Directive Verbs</strong>: Formulates motions using civil service directives ("Critically evaluate", "Discuss the ramifications").</li>
+                    <li><strong>Multi-Dimensional Dossier</strong>: Provides constitutional context, economic angles, and international parallels.</li>
+                    <li><strong>Custom Fresh Entry</strong>: Candidates can input their own motion or pick one-click trending theme chips.</li>
+                    <li><strong>Zero-Cost RSS</strong>: Eliminates expensive third-party news API subscriptions.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>News & Synthesis Module</span>
+            <span>Slide 5 of 13</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: TIMED ARENA -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">VOICE & TIMING</div>
+            <h2 class="slide-title">The Interactive Timed Arena & Speech Engine</h2>
+            <p class="slide-subtitle">Replicating strict examination chamber conditions with acoustic and biometric feedback</p>
+        </div>
+        <div class="grid-3">
+            <div class="card primary-border">
+                <div class="card-title">⏱️ Precision Timers</div>
+                <ul class="card-list">
+                    <li>60s Prep Phase: Scratchpad area to structure introduction, body, and conclusion.</li>
+                    <li>5-Min Timed Arena: Animated circular SVG countdown ring.</li>
+                    <li>Web Audio Alerts: 5-second gentle warning chime and final buzzer.</li>
+                </ul>
+            </div>
+            <div class="card cyan-border">
+                <div class="card-title">🎙️ Web Speech STT</div>
+                <ul class="card-list">
+                    <li>Zero-latency client-side speech recognition using HTML5 Web Speech API.</li>
+                    <li>Continuous recognition mode with auto-reconnect on natural micro-pauses.</li>
+                    <li>Live audio visualizer displaying soundwave pulses during active speech.</li>
+                </ul>
+            </div>
+            <div class="card green-border">
+                <div class="card-title">🏎️ Real-Time Pacing</div>
+                <ul class="card-list">
+                    <li>Continuous Words-Per-Minute (WPM) calculation.</li>
+                    <li>Speedometer indicator flags Slow (&lt;100 WPM), Optimal (110-150 WPM), or Rushed (&gt;160 WPM).</li>
+                    <li>Auto-saving drafts to localStorage prevents accidental data loss.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>Arena & Speech Recognition</span>
+            <span>Slide 6 of 13</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: RUBRIC -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">EVALUATION METRICS</div>
+            <h2 class="slide-title">50-Point Standardized UPSC Scoring Rubric</h2>
+            <p class="slide-subtitle">Multi-dimensional evaluation with strict anti-hallucination and incoherence safeguards</p>
+        </div>
+        <div class="grid-2">
+            <div class="card primary-border">
+                <div class="card-title">📊 5 Core Dimensions (10 Pts Each)</div>
+                <ul class="card-list">
+                    <li><strong>1. Factual Accuracy & Context</strong>: Empirical data, constitutional articles, treaties.</li>
+                    <li><strong>2. Relevance & Focus</strong>: Direct adherence to question; penalizes digressions.</li>
+                    <li><strong>3. Structure & Clarity</strong>: Clear intro, balanced arguments, and solid conclusion.</li>
+                    <li><strong>4. Depth of Analysis</strong>: Multi-stakeholder impacts and policy roadmaps.</li>
+                    <li><strong>5. Time Discipline & Pacing</strong>: Sustained delivery within optimal 110-150 WPM.</li>
+                </ul>
+            </div>
+            <div class="card gold-border">
+                <div class="card-title">🛡️ Quality Guards & Anti-Hallucination</div>
+                <ul class="card-list">
+                    <li><strong>Incoherence Guard</strong>: Random typing or gibberish awarded &lt;5/50 with Disqualified status.</li>
+                    <li><strong>Off-Topic Penalty</strong>: Unrelated speeches heavily penalized in Relevance (1/10).</li>
+                    <li><strong>Ideal Model Answer</strong>: Generates gold-standard UPSC benchmark structure.</li>
+                    <li><strong>Orator Ranking</strong>: Categorizes candidate into Distinguished, Proficient, or Developing.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>Scoring & Rubric Engine</span>
+            <span>Slide 7 of 13</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 8: DAILY QUIZ -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">INTERACTIVE TESTING</div>
+            <h2 class="slide-title">Daily Current Affairs MCQ Quiz Arena</h2>
+            <p class="slide-subtitle">Rapid-fire 5-question timed drills testing retention, decision speed, and factual grasp</p>
+        </div>
+        <div class="grid-3">
+            <div class="card primary-border">
+                <div class="card-title">🎯 6 Domain Drills</div>
+                <ul class="card-list">
+                    <li>Polity, International Relations, AI & Tech, Economy, Sports, and General Mix.</li>
+                    <li>High-yield curated question bank aligned with 2026 current affairs trends.</li>
+                    <li>Randomized options to prevent pattern recognition bias.</li>
+                </ul>
+            </div>
+            <div class="card cyan-border">
+                <div class="card-title">⚡ 45s Countdown & Feedback</div>
+                <ul class="card-list">
+                    <li>45-second circular timer enforces rapid decision-making.</li>
+                    <li>Instant option reveal: Correct choice lights up in green glow; wrong choice in red glow.</li>
+                    <li>Instant in-depth educational rationale detailing constitutional/statutory facts.</li>
+                </ul>
+            </div>
+            <div class="card green-border">
+                <div class="card-title">📈 Scorecard & Database</div>
+                <ul class="card-list">
+                    <li>Computes accuracy percentage, score, and total elapsed seconds.</li>
+                    <li>Review cards comparing user choices against model answers.</li>
+                    <li>Dedicated <span class="code-pill">quiz_results</span> table logs candidate improvement trajectory.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>Current Affairs Quiz Module</span>
+            <span>Slide 8 of 13</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: DATABASE -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">DATABASE & STORAGE</div>
+            <h2 class="slide-title">Relational Schema & Dual Failover Mirror</h2>
+            <p class="slide-subtitle">Engineered for data integrity, analytics reporting, and zero-configuration cloud portability</p>
+        </div>
+        <div class="grid-2">
+            <div class="card primary-border">
+                <div class="card-title">🗄️ Relational Schema Tables</div>
+                <ul class="card-list">
+                    <li><span class="code-pill">users</span>: Candidate credentials and profile metadata.</li>
+                    <li><span class="code-pill">categories</span>: Domain definitions, slugs, and icon descriptors.</li>
+                    <li><span class="code-pill">headlines_cache</span>: Cached RSS items with TTL to avoid redundant network calls.</li>
+                    <li><span class="code-pill">practice_sessions</span>: Speeches, duration, WPM, and full transcript logs.</li>
+                    <li><span class="code-pill">evaluations</span>: 5 rubric scores, orator tier, feedback, and model answer.</li>
+                    <li><span class="code-pill">quiz_results</span>: Domain, score, accuracy %, and time elapsed.</li>
+                </ul>
+            </div>
+            <div class="card cyan-border">
+                <div class="card-title">🔄 Dual MySQL & SQLite Mirror</div>
+                <ul class="card-list">
+                    <li><strong>MySQL 8.0 Primary</strong>: Full relational DDL with foreign keys and cascading deletes.</li>
+                    <li><strong>SQLite 3 Fallback</strong>: Seamless auto-initialization when MySQL credentials are omitted.</li>
+                    <li><strong>Serverless Sandboxing</strong>: Detects Vercel/Lambda and redirects database writes to <span class="code-pill">/tmp/</span>.</li>
+                    <li>Completely eliminates read-only filesystem crashes in cloud serverless deployments.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>Database Architecture</span>
+            <span>Slide 9 of 13</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 10: DEPLOYMENT -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">DEVOPS & CLOUD</div>
+            <h2 class="slide-title">Vercel Serverless Deployment & CI/CD</h2>
+            <p class="slide-subtitle">Continuous deployment pipeline delivering global availability with zero server maintenance</p>
+        </div>
+        <div class="grid-2">
+            <div class="card primary-border">
+                <div class="card-title">⚡ Serverless Runtime Configuration</div>
+                <ul class="card-list">
+                    <li>Configured via <span class="code-pill">vercel.json</span> targeting Python 3.12 serverless runner.</li>
+                    <li>Stripped UTF-8 Byte-Order Mark (BOM) to ensure 100% compliant JSON parsing.</li>
+                    <li>Ultra-fast package compilation using <span class="code-pill">uv</span> package manager in 5 seconds.</li>
+                    <li>Wildcard route rewrite sends all requests to Flask WSGI entry point.</li>
+                </ul>
+            </div>
+            <div class="card green-border">
+                <div class="card-title">🚀 Live Verification Results</div>
+                <ul class="card-list">
+                    <li><strong>Production URL</strong>: <a href="https://aiextemporeapp.vercel.app" target="_blank" style="color: var(--cyan);">https://aiextemporeapp.vercel.app</a> (Status: 200 OK).</li>
+                    <li><strong>Favicon Route</strong>: Crisp SVG vector icon delivered with 200 OK at <span class="code-pill">/favicon.ico</span>.</li>
+                    <li><strong>Quiz API Route</strong>: Live verified 5 MCQs per request (200 OK).</li>
+                    <li><strong>GitHub CI/CD</strong>: Synced to <a href="https://github.com/amanthakur0118-lgtm/python_project_ExtemporeAI" target="_blank" style="color: var(--gold);">python_project_ExtemporeAI</a>.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>DevOps Pipeline</span>
+            <span>Slide 10 of 13</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 11: QA & VERIFICATION -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">QUALITY ASSURANCE</div>
+            <h2 class="slide-title">System Verification & Test Matrix</h2>
+            <p class="slide-subtitle">Comprehensive automated unit, integration, and security tests across all platform layers</p>
+        </div>
+        <div class="grid-3">
+            <div class="card green-border">
+                <div class="card-title">✅ API Endpoints (200 OK)</div>
+                <ul class="card-list">
+                    <li><span class="code-pill">GET /</span>: Web shell loaded</li>
+                    <li><span class="code-pill">GET /api/categories</span>: 6 domains</li>
+                    <li><span class="code-pill">GET /api/news/polity</span>: Live RSS</li>
+                    <li><span class="code-pill">POST /api/generate-question</span>: 200</li>
+                    <li><span class="code-pill">POST /api/evaluate</span>: 200</li>
+                    <li><span class="code-pill">GET /api/quiz</span>: 200</li>
+                    <li><span class="code-pill">POST /api/quiz/submit</span>: 200</li>
+                </ul>
+            </div>
+            <div class="card primary-border">
+                <div class="card-title">🛡️ Rubric Stress Tests</div>
+                <ul class="card-list">
+                    <li><strong>Gibberish Input</strong>: "asdf banana potato" disqualified (2/50 score).</li>
+                    <li><strong>Off-Topic Input</strong>: Sports answer on legal prompt penalized to 10/50.</li>
+                    <li><strong>UPSC Model Speech</strong>: Awarded Distinguished Orator (40/50 score).</li>
+                    <li><strong>Pacing Gauge</strong>: Correctly alerts on &lt;100 WPM and &gt;160 WPM.</li>
+                </ul>
+            </div>
+            <div class="card cyan-border">
+                <div class="card-title">🔍 Frontend Integrity</div>
+                <ul class="card-list">
+                    <li><span class="code-pill">node -c app.js</span>: 0 JavaScript syntax errors.</li>
+                    <li><span class="code-pill">check_ids.py</span>: Audited all 119 DOM element references (0 missing IDs).</li>
+                    <li>Cross-browser responsive testing on Chrome, Edge, Safari, Firefox.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>Verification & Testing</span>
+            <span>Slide 11 of 13</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 12: FUTURE SCOPE -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">INNOVATION ROADMAP</div>
+            <h2 class="slide-title">Future Enhancements & Scalability</h2>
+            <p class="slide-subtitle">Architectural vision for next-generation multi-modal conversational AI coaching</p>
+        </div>
+        <div class="grid-3">
+            <div class="card primary-border">
+                <div class="card-title">🎧 Acoustic Prosody Analysis</div>
+                <ul class="card-list">
+                    <li>Fast Fourier Transform (FFT) analysis on vocal audio.</li>
+                    <li>Tracks pitch variation, vocal enthusiasm, and nervous vocal tremors.</li>
+                    <li>Distinguishes thoughtful pauses from hesitant pauses.</li>
+                </ul>
+            </div>
+            <div class="card cyan-border">
+                <div class="card-title">👁️ Computer Vision Tracking</div>
+                <ul class="card-list">
+                    <li>Lightweight WebRTC & MediaPipe integration.</li>
+                    <li>Evaluates webcam eye contact and posture stability.</li>
+                    <li>Facial composure and professional hand gesture detection.</li>
+                </ul>
+            </div>
+            <div class="card gold-border">
+                <div class="card-title">👥 Multi-Agent GD Chamber</div>
+                <ul class="card-list">
+                    <li>Autonomous LLM-driven peer avatars simulating rival candidates.</li>
+                    <li>Simulates group discussions with realistic interjections.</li>
+                    <li>Tests candidate composure under live cross-examination.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>Future Roadmap</span>
+            <span>Slide 12 of 13</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 13: CONCLUSION -->
+    <div class="slide">
+        <div>
+            <div class="slide-tag">PROJECT CONCLUSION</div>
+            <h2 class="slide-title">ExtemporeAI: Democratizing Oratory Excellence</h2>
+            <p class="slide-subtitle">Transforming impromptu speaking preparation from an exclusive luxury into an accessible science</p>
+        </div>
+        <div class="card green-border" style="margin: 2rem 0; padding: 2rem;">
+            <ul class="card-list" style="font-size: 1.05rem;">
+                <li style="margin-bottom: 1rem;">✔ Successfully built, verified, and deployed a production-grade AI platform for spontaneous public speaking and current affairs training.</li>
+                <li style="margin-bottom: 1rem;">✔ Combines live zero-dependency RSS news aggregation, speech-to-text processing, and a 50-point UPSC standardized rubric with anti-hallucination quality guards.</li>
+                <li style="margin-bottom: 1rem;">✔ Features a Daily Current Affairs MCQ Quiz mode with 45s timer drills, domain filters, and detailed educational rationales.</li>
+                <li style="margin-bottom: 1rem;">✔ Deployed live on Vercel Serverless with dual MySQL and SQLite failover architecture.</li>
+                <li>✔ Open-source, reproducible, and ready for institutional deployment across universities, academies, and competitive examination centers.</li>
+            </ul>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 1.2rem 2rem; border-radius: 12px;">
+            <div>
+                <strong style="color: #fff;">Live Website:</strong> <a href="https://aiextemporeapp.vercel.app" target="_blank" style="color: var(--cyan); text-decoration: none;">https://aiextemporeapp.vercel.app</a>
+                &nbsp;&bull;&nbsp;
+                <strong style="color: #fff;">GitHub:</strong> <a href="https://github.com/amanthakur0118-lgtm/python_project_ExtemporeAI" target="_blank" style="color: var(--gold); text-decoration: none;">amanthakur0118-lgtm/python_project_ExtemporeAI</a>
+            </div>
+            <div style="font-weight: 700; color: var(--green); font-size: 1.1rem;">
+                Thank You &bull; Questions & Demonstration
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>ExtemporeAI Conclusion</span>
+            <span>Slide 13 of 13</span>
+        </div>
+    </div>
+
+</div>
+
+<!-- BOTTOM FLOATING CONTROLS -->
+<div class="controls">
+    <button class="nav-btn" onclick="prevSlide()" title="Previous Slide (Left Arrow)">◀</button>
+    <div class="slide-counter" id="slideCounter">1 / 13</div>
+    <button class="nav-btn" onclick="nextSlide()" title="Next Slide (Right Arrow)">▶</button>
+    <button class="nav-btn" onclick="toggleFullscreen()" title="Fullscreen (F)">⛶</button>
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const counter = document.getElementById('slideCounter');
+    const progressBar = document.getElementById('progressBar');
+
+    function updateSlide() {
+        slides.forEach((slide, idx) => {
+            slide.classList.toggle('active', idx === currentSlide);
+        });
+        counter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+        progressBar.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+    }
+
+    function nextSlide() {
+        if (currentSlide < totalSlides - 1) {
+            currentSlide++;
+            updateSlide();
+        }
+    }
+
+    function prevSlide() {
+        if (currentSlide > 0) {
+            currentSlide--;
+            updateSlide();
+        }
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {});
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'Space') {
+            nextSlide();
+        } else if (e.key === 'ArrowLeft') {
+            prevSlide();
+        } else if (e.key === 'f' || e.key === 'F') {
+            toggleFullscreen();
+        }
+    });
+
+    // Touch swipe support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', (e) => {
+        let diff = e.changedTouches[0].screenX - touchStartX;
+        if (diff < -50) nextSlide();
+        if (diff > 50) prevSlide();
+    });
+
+    updateSlide();
+</script>
+
+</body>
+</html>

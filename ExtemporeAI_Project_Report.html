@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExtemporeAI - Comprehensive Project Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --primary: #4f46e5;
+        --primary-dark: #3730a3;
+        --secondary: #0891b2;
+        --text-main: #0f172a;
+        --text-muted: #475569;
+        --bg: #ffffff;
+        --bg-alt: #f8fafc;
+        --border: #e2e8f0;
+        --success: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--text-main);
+        background: var(--bg-alt);
+        line-height: 1.7;
+        font-size: 15px;
+    }
+    .print-actions {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(10px);
+        color: #fff;
+        padding: 0.8rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    .print-actions .btn {
+        background: var(--primary);
+        color: #fff;
+        padding: 0.5rem 1.2rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: 0.2s;
+    }
+    .print-actions .btn:hover {
+        background: #4338ca;
+    }
+    .container {
+        max-width: 960px;
+        margin: 2rem auto;
+        background: var(--bg);
+        padding: 4rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        border: 1px solid var(--border);
+    }
+    h1 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #1e1b4b;
+        margin-bottom: 0.5rem;
+        line-height: 1.25;
+    }
+    h2 {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin: 2.5rem 0 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e0e7ff;
+    }
+    h3 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 1.8rem 0 0.8rem;
+    }
+    p {
+        margin-bottom: 1rem;
+        color: var(--text-main);
+    }
+    li {
+        margin-bottom: 0.5rem;
+        margin-left: 1.5rem;
+    }
+    hr {
+        margin: 2.5rem 0;
+        border: 0;
+        border-top: 1px solid var(--border);
+    }
+    pre {
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 1.2rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1.2rem 0;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.88rem;
+    }
+    code {
+        font-family: 'JetBrains Mono', monospace;
+        background: #eef2ff;
+        color: var(--primary);
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+    pre code {
+        background: transparent;
+        color: inherit;
+        padding: 0;
+    }
+    .table-responsive {
+        overflow-x: auto;
+        margin: 1.5rem 0;
+    }
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+    }
+    .report-table th, .report-table td {
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border);
+        text-align: left;
+    }
+    .report-table th {
+        background: #f1f5f9;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    .report-table tr:nth-child(even) {
+        background: #f8fafc;
+    }
+    a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    .header-badge {
+        display: inline-block;
+        background: #e0e7ff;
+        color: var(--primary);
+        padding: 0.3rem 0.8rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    @media print {
+        .print-actions { display: none; }
+        body { background: #fff; font-size: 11pt; }
+        .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            border: none;
+            box-shadow: none;
+        }
+        h2 { page-break-before: always; }
+        table, pre { page-break-inside: avoid; }
+    }
+</style>
+</head>
+<body>
+
+<div class="print-actions">
+    <div>
+        <strong>ExtemporeAI Documentation</strong> &bull; Complete Project Report
+    </div>
+    <div style="display: flex; gap: 1rem;">
+        <button class="btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+        <a class="btn" style="background: #0284c7;" href="ExtemporeAI_Presentation.html" target="_blank">📽️ Open Slide Deck</a>
+        <a class="btn" style="background: #059669;" href="ExtemporeAI_Presentation.pptx" download>📥 Download PPTX</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header-badge">OFFICIAL TECHNICAL PROJECT REPORT</div>
+    <h1>PROJECT REPORT</h1>
+<h1>ExtemporeAI: Real-Time AI-Powered Impromptu Speaking & Current Affairs Evaluation Platform</h1>
+<p><strong>Candidate / Developer</strong>: Aman  </p>
+<p><strong>Academic / Project Track</strong>: Full-Stack AI & Public Speaking Coaching System  </p>
+<p><strong>Version</strong>: 1.5.0 Production  </p>
+<p><strong>Live Application URL</strong>: <a href="https://aiextemporeapp.vercel.app" target="_blank">https://aiextemporeapp.vercel.app</a>  </p>
+<p><strong>GitHub Repository</strong>: <a href="https://github.com/amanthakur0118-lgtm/python_project_ExtemporeAI" target="_blank">https://github.com/amanthakur0118-lgtm/python_project_ExtemporeAI</a>  </p>
+<p><strong>Date</strong>: October 2026  </p>
+<hr/>
+<h2>TABLE OF CONTENTS</h2>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><a href="#1-abstract" target="_blank">Abstract</a></li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><a href="#2-introduction--problem-statement" target="_blank">Introduction & Problem Statement</a></li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><a href="#3-existing-systems--literature-survey" target="_blank">Existing Systems & Literature Survey</a></li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><a href="#4-proposed-system-overview" target="_blank">Proposed System Overview</a></li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><a href="#5-system-architecture--design" target="_blank">System Architecture & Design</a></li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><a href="#6-detailed-module-specifications" target="_blank">Detailed Module Specifications</a></li>
+<p>   - 6.1 Real-Time News Ingestion & Topic Synthesis Engine</p>
+<p>   - 6.2 Dual Practice Modes (Breaking News & Custom Fresh Entry)</p>
+<p>   - 6.3 Voice Recognition & Real-Time Pacing Arena</p>
+<p>   - 6.4 50-Point UPSC Standardized Rubric & Anti-Hallucination Guards</p>
+<p>   - 6.5 Daily Current Affairs MCQ Quiz Engine</p>
+<p>   - 6.6 Relational Persistence & Analytics Layer</p>
+<p>7. <a href="#7-database-design--schema" target="_blank">Database Design & Schema</a></p>
+<p>8. <a href="#8-deployment--serverless-cloud-architecture" target="_blank">Deployment & Serverless Cloud Architecture</a></p>
+<p>9. <a href="#9-verification-testing--results" target="_blank">Verification, Testing & Results</a></p>
+<p>10. <a href="#10-future-scope--enhancements" target="_blank">Future Scope & Enhancements</a></p>
+<p>11. <a href="#11-conclusion" target="_blank">Conclusion</a></p>
+<p>12. <a href="#12-references--appendix" target="_blank">References & Appendix</a></p>
+<hr/>
+<h2>1. ABSTRACT</h2>
+<p>Public speaking, and specifically impromptu (extempore) speaking, is one of the most intellectually demanding components of elite competitive examinations, including the Union Public Service Commission (UPSC) Civil Services Personality Test, Services Selection Board (SSB) lecturettes, MBA Group Discussions & Personal Interviews (GD/PI), and corporate leadership assessments. Candidates are typically given an unfamiliar contemporary motion and allowed 60 seconds of preparation before delivering an articulate, balanced, and evidence-grounded 3- to 5-minute discourse.</p>
+<p>Traditional coaching methodologies suffer from severe structural limitations: human evaluation is expensive, unstandardized, and scheduling-constrained, while self-study lacks objective real-time speech analytics and feedback on factual accuracy. Furthermore, conventional mock questions are static and fail to reflect daily breaking geopolitical, constitutional, and economic developments.</p>
+<p>To address these challenges, <strong>ExtemporeAI</strong> was conceived and engineered. ExtemporeAI is a production-grade, full-stack web platform powered by Python (Flask), Google Gemini GenAI, the Web Speech API, and a resilient dual MySQL/SQLite relational database architecture. The system automatically ingests real-time RSS news feeds across six high-yield domains, synthesizes multi-perspective debate motions, captures candidate speech via client-side speech-to-text recognition, enforces real-time pacing discipline, and grades transcripts against a rigorous 50-point UPSC rubric. Additionally, an interactive Daily Current Affairs MCQ Quiz arena provides timed retention drills. The platform is deployed live on Vercel Serverless infrastructure with global availability.</p>
+<hr/>
+<h2>2. INTRODUCTION & PROBLEM STATEMENT</h2>
+<h3>2.1 Background</h3>
+<p>The ability to formulate, structure, and articulate complex policy positions under extreme cognitive time pressure is the hallmark of effective administrative leaders and executives. In UPSC interviews and corporate assessments, evaluators look for:</p>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Immediate Cognitive Recall</strong>: Retrieving relevant constitutional articles, statutory precedents, economic indicators, and historical treaties without reference notes.</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Structural Coherence</strong>: Delivering an intuitive three-part speech (Introduction, Multi-stakeholder Body Analysis, Constructive Conclusion).</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Pacing & Vocal Composure</strong>: Speaking between 110 and 150 Words Per Minute (WPM) without verbal crutches or panic pauses.</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Nuanced Neutrality</strong>: Analyzing both pros and cons rather than adopting polarizing ideological rhetoric.</li>
+<h3>2.2 The Problem Statement</h3>
+<p>Existing learning pathways fail candidates across three critical dimensions:</p>
+<li><strong>The Evaluation Void</strong>: Candidates practice alone into a voice recorder or mirror. Without real-time transcription and semantic analysis, they have no objective means of measuring relevance, factual accuracy, or structural balance.</li>
+<li><strong>The Stale Knowledge Barrier</strong>: Preparing with static textbooks or past year papers disconnects candidates from dynamic current affairs (e.g., semiconductor trade agreements, emerging Supreme Court constitutional benches, or RBI monetary changes).</li>
+<li><strong>Prohibitive Mentorship Costs</strong>: One-on-one mock interview sessions with veteran civil servants or communications trainers cost upwards of $100 per hour, creating a steep socio-economic barrier for underprivileged aspirants.</li>
+<h3>2.3 Project Objectives</h3>
+<p>The objective of this project is to build an autonomous, zero-cost, real-time coaching ecosystem that:</p>
+<li style="list-style-type: decimal; margin-left: 1.5rem;">Dynamically curates daily high-yield news headlines across six strategic categories.</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;">Synthesizes balanced extempore debate prompts with multi-dimensional context dossiers.</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;">Provides a high-fidelity exam simulation environment featuring 60-second preparation and 5-minute timed speaking phases.</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;">Employs client-side speech recognition with continuous WPM calculation and visual pacing guidance.</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;">Applies a strict, 50-point UPSC-standardized rubric with automated safeguards against hallucination, incoherence, and off-topic digression.</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;">Delivers an interactive, timed Current Affairs MCQ Quiz arena with educational answer explanations.</li>
+<p>7. Guarantees 99.9% uptime and zero-cost scaling via serverless cloud deployment.</p>
+<hr/>
+<h2>3. EXISTING SYSTEMS & LITERATURE SURVEY</h2>
+<div class="table-responsive"><table class="report-table">
+<thead><tr><th>Feature / Dimension</th><th>Traditional Human Coaching</th><th>Generic Voice Recorders / Toastmasters</th><th>Generic LLM Chatbots (ChatGPT/Claude)</th><th><strong>ExtemporeAI (Proposed System)</strong></th></tr></thead><tbody>
+<tr><td><strong>Availability</strong></td><td>Low (By appointment only)</td><td>High (Manual recording)</td><td>High (Text interface)</td><td><strong>Instant, 24/7 Global Access</strong></td></tr>
+<tr><td><strong>Real-Time News Ingestion</strong></td><td>Dependent on mentor prep</td><td>None (User must bring topic)</td><td>Static knowledge cutoff / Manual search</td><td><strong>Automated Zero-Dependency Live RSS</strong></td></tr>
+<tr><td><strong>Exam Timer Simulation</strong></td><td>Manual stopwatch</td><td>Self-monitored</td><td>None (Un-timed chat)</td><td><strong>Precision 60s Prep + 5m Timed Arena</strong></td></tr>
+<tr><td><strong>Speech-to-Text Transcription</strong></td><td>None</td><td>Manual playback</td><td>Requires manual audio upload</td><td><strong>Low-Latency In-Browser Web Speech STT</strong></td></tr>
+<tr><td><strong>Pacing & Speedometer</strong></td><td>Subjective human comment</td><td>None</td><td>None</td><td><strong>Live WPM Gauge & Pacing Guidance</strong></td></tr>
+<tr><td><strong>Standardized Rubric</strong></td><td>Subjective, mentor-biased</td><td>Basic peer feedback</td><td>Generic text review</td><td><strong>Strict 50-Pt UPSC Standardized Rubric</strong></td></tr>
+<tr><td><strong>Incoherence / Anti-Cheat Guard</strong></td><td>Human detects immediately</td><td>N/A</td><td>Often flatters/generates false praise</td><td><strong>Rigorous Penalty Guard (<5/50 for junk)</strong></td></tr>
+<tr><td><strong>MCQ Drill Integration</strong></td><td>Separate test series</td><td>None</td><td>Requires manual prompt engineering</td><td><strong>Built-in 5-Question Timed MCQ Arena</strong></td></tr>
+<tr><td><strong>Cost</strong></td><td>High ($50 - $200/hr)</td><td>Free / Low</td><td>$20/month subscription</td><td><strong>100% Free & Open Source</strong></td></tr>
+</tbody></table></div>
+<hr/>
+<h2>4. PROPOSED SYSTEM OVERVIEW</h2>
+<p>ExtemporeAI is built upon a modular, event-driven, three-tier architecture:</p>
+<pre><code>
++-----------------------------------------------------------------------------------+
+|                                 CLIENT TIER (SPA)                                 |
+|  - Launchpad &amp; News Feed        - Preparation Scratchpad      - 5-Min Timed Arena |
+|  - Web Speech API (STT)         - Pacing Speedometer (WPM)    - SVG Countdown Ring|
+|  - Audio Visualizer             - Acoustic Sound Effects      - Daily MCQ Arena   |
++------------------------------------------+----------------------------------------+
+                                           | HTTPS / JSON REST API
+                                           v
++-----------------------------------------------------------------------------------+
+|                             APPLICATION LAYER (Flask)                             |
+|  - app.py: REST Endpoints &amp; Router                - config.py: Multi-Env Config   |
+|  - news_service.py: RSS Ingestion &amp; XML Parsing   - ai_service.py: Rubric Engine  |
+|  - quiz_service.py: 6-Domain MCQ Generator        - database.py: Relational DAO   |
++------------------------------------------+----------------------------------------+
+                                           | SQL Queries / Transactions
+                                           v
++-----------------------------------------------------------------------------------+
+|                              DATA TIER (Dual Mirror)                              |
+|  - Primary: MySQL 8.0 (extempore_db) with Foreign Keys &amp; Cascading Deletes        |
+|  - Fallback Mirror: SQLite 3 with automatic /tmp/ redirection on Vercel           |
+|  - Tables: users, categories, headlines_cache, practice_sessions, evaluations,     |
+|            quiz_results                                                           |
++-----------------------------------------------------------------------------------+
+</code></pre>
+<hr/>
+<h2>5. DETAILED MODULE SPECIFICATIONS</h2>
+<h3>5.1 Real-Time News Ingestion & Topic Synthesis Engine (`news_service.py`, `ai_service.py`)</h3>
+<li><strong>RSS Ingestion</strong>: Pulls raw XML feeds from Google News across six distinct categories:</li>
+<p>  1. <em>National & Polity</em>: Parliamentary legislation, constitutional debates, Election Commission guidelines.</p>
+<p>  2. <em>International Relations</em>: Quad summits, bilateral defense partnerships, Indo-Pacific diplomacy.</p>
+<p>  3. <em>Tech & Cyber Governance</em>: Semiconductor fabrication, AI safety regulation, digital data protection.</p>
+<p>  4. <em>Economy & Banking</em>: Inflation targeting, fiscal deficit, trade balances, GST council updates.</p>
+<p>  5. <em>Sports & Society</em>: Sports infrastructure, public health, gender equality initiatives.</p>
+<p>  6. <em>General Mix</em>: Cross-disciplinary contemporary dilemmas.</p>
+<li><strong>Topic Formulation</strong>: Transforms raw news headlines into provocative, open-ended extempore motions using standard civil service directive verbs (<em>"Critically analyze..."</em>, <em>"Evaluate the ramifications of..."</em>).</li>
+<li><strong>Context Dossier</strong>: Generates a 3-point briefing outlining Constitutional Background, Economic Stakeholder Trade-offs, and International Precedents.</li>
+<h3>5.2 Dual Practice Modes: Breaking News & Custom Fresh Entry</h3>
+<li><strong>Breaking News Mode</strong>: Candidates pick from real-time live headlines refreshed directly from global publications.</li>
+<li><strong>Custom Fresh Entry Mode</strong>: Candidates can input their own motion or select from curated trending chips (<em>One Nation One Election</em>, <em>AI & Job Displacement</em>, <em>Uniform Civil Code</em>, <em>Climate Justice</em>, <em>Digital Sovereignty</em>).</li>
+<li><strong>Instant Clean Reset</strong>: Clicking <strong>➕ Fresh Entry</strong> in the top navigation immediately halts active timers, stops audio streaming, clears scratchpad buffers, and provides a visual toast confirmation.</li>
+<h3>5.3 Voice Recognition & Real-Time Pacing Arena (`speech.js`, `timer.js`)</h3>
+<li><strong>Client-Side Speech-to-Text</strong>: Employs the HTML5 Web Speech API (<code>webkitSpeechRecognition</code>) in continuous listening mode with interim results.</li>
+<li><strong>Dynamic Speedometer</strong>: Continuously tracks elapsed speaking time against transcript word count to calculate instantaneous and rolling Words Per Minute (WPM):</li>
+<p>  - <code>< 100 WPM</code>: Flagged as <strong>Slow / Hesitant</strong> (amber warning).</p>
+<p>  - <code>110 - 150 WPM</code>: Flagged as <strong>Optimal / Articulate</strong> (emerald green).</p>
+<p>  - <code>> 160 WPM</code>: Flagged as <strong>Rushed / Breathless</strong> (rose red warning).</p>
+<li><strong>Acoustic Audio Signals</strong>: Built using the Web Audio API without external audio files:</li>
+<p>  - 5-second gentle preparatory chime (<code>440 Hz Sine wave with exponential decay</code>).</p>
+<p>  - Final examination buzzer (<code>220 Hz Sawtooth dual-tone alert</code>).</p>
+<h3>5.4 50-Point UPSC Standardized Rubric Scoring Engine (`ai_service.py`)</h3>
+<p>Each candidate transcript is evaluated across five distinct 10-point dimensions:</p>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Factual Accuracy & Context (10 Pts)</strong>: Verification of statutory provisions, court rulings, empirical data, and international treaties.</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Relevance & Direct Focus (10 Pts)</strong>: Measures direct adherence to the core question; penalizes discursive tangents.</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Structure & Clarity (10 Pts)</strong>: Evaluates tripartite coherence (Introduction, Body, Conclusion).</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Depth of Analysis (10 Pts)</strong>: Assesses multi-stakeholder trade-offs, socio-economic impact, and strategic feasibility.</li>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Time Discipline & Pacing (10 Pts)</strong>: Rewards sustained delivery within optimal WPM ranges; penalizes premature termination.</li>
+<h4>Strict Anti-Hallucination & Quality Guards:</h4>
+<li><strong>Incoherence / Random Gibberish Filter</strong>: Inputs like <em>"banana potato asdf"</em> are detected by statistical language modeling and awarded <code>< 5 / 50</code> with an explicit Disqualified / Incoherent status.</li>
+<li><strong>Off-Topic Detection</strong>: Answering a constitutional question with sports trivia incurs a penalty, dropping Relevance and Depth to <code>1 / 10</code>.</li>
+<li><strong>Ideal Model Answer Generation</strong>: Generates a gold-standard UPSC benchmark response highlighting constitutional articles and policy roadmaps.</li>
+<h3>5.5 Daily Current Affairs MCQ Quiz Engine (`quiz_service.py`)</h3>
+<li><strong>Domain Drills</strong>: Generates 5-question rapid drills across any chosen domain or all domains combined.</li>
+<li><strong>45-Second Countdown Ring</strong>: Enforces rapid recall under pressure.</li>
+<li><strong>Instant Option Feedback</strong>: Clicked options light up dynamically: correct answers glow emerald green; wrong choices glow crimson red.</li>
+<li><strong>Educational Rationales</strong>: Immediately reveals an in-depth explanatory breakdown detailing why the correct option is valid and providing historical context.</li>
+<li><strong>Persistent Tracking</strong>: Quiz scores, accuracy percentage, and time taken are written to the database.</li>
+<hr/>
+<h2>6. DATABASE DESIGN & SCHEMA</h2>
+<p>The database schema (<code>schema.sql</code>) enforces relational integrity with foreign keys and cascading deletes:</p>
+<pre><code>
+-- 1. Users Table
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Categories Table
+CREATE TABLE categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT,
+    icon VARCHAR(50) DEFAULT &#x27;mic&#x27;
+);
+
+-- 3. Practice Sessions Table
+CREATE TABLE practice_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    category_id INT,
+    motion TEXT NOT NULL,
+    preparation_duration INT DEFAULT 60,
+    speaking_duration INT DEFAULT 300,
+    transcript TEXT,
+    words_per_minute FLOAT DEFAULT 0.0,
+    total_words INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+);
+
+-- 4. Evaluations Table
+CREATE TABLE evaluations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id INT NOT NULL UNIQUE,
+    score_accuracy INT NOT NULL,
+    score_relevance INT NOT NULL,
+    score_structure INT NOT NULL,
+    score_depth INT NOT NULL,
+    score_pacing INT NOT NULL,
+    total_score INT NOT NULL,
+    orator_tier VARCHAR(50) NOT NULL,
+    feedback_strengths TEXT,
+    feedback_improvements TEXT,
+    model_structure TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES practice_sessions(id) ON DELETE CASCADE
+);
+
+-- 5. Quiz Results Table
+CREATE TABLE quiz_results (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    domain VARCHAR(50) NOT NULL,
+    score INT NOT NULL,
+    total_questions INT DEFAULT 5,
+    accuracy_pct FLOAT NOT NULL,
+    time_taken_seconds INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+</code></pre>
+<h3>Dual MySQL & SQLite Mirror Architecture:</h3>
+<p>To guarantee that the application runs locally and on cloud serverless environments without requiring external database provisioning:</p>
+<li><strong>MySQL Primary</strong>: Used when <code>MYSQL_HOST</code> and credentials are provided in <code>.env</code>.</li>
+<li><strong>SQLite Mirror</strong>: Automatically initializes when MySQL is unavailable.</li>
+<li><strong>Serverless Read-Only Filesystem Handling</strong>: In serverless containers (Vercel/AWS Lambda), the root filesystem is read-only. <code>config.py</code> detects <code>VERCEL=1</code> and dynamically redirects database writes to <code>/tmp/extempore_backup.db</code>.</li>
+<hr/>
+<h2>7. DEPLOYMENT & CLOUD ARCHITECTURE</h2>
+<h3>7.1 Serverless Deployment on Vercel</h3>
+<p>The application is deployed using <code>@vercel/python</code> on Vercel:</p>
+<li><strong>Configuration (<code>vercel.json</code>)</strong>:</li>
+<p>  <code></code>`json</p>
+<p>  {</p>
+<p>    "version": 2,</p>
+<p>    "builds": [</p>
+<p>      {</p>
+<p>        "src": "app.py",</p>
+<p>        "use": "@vercel/python"</p>
+<p>      }</p>
+<p>    ],</p>
+<p>    "routes": [</p>
+<p>      {</p>
+<p>        "src": "/(.*)",</p>
+<p>        "dest": "app.py"</p>
+<p>      }</p>
+<p>    ]</p>
+<p>  }</p>
+<p>  <code></code>`</p>
+<li><strong>Byte-Order Mark (BOM) Resolution</strong>: The configuration file was strictly encoded in pure UTF-8 without BOM (<code>\xef\xbb\xbf</code>), resolving Vercel CLI JSON parse errors.</li>
+<li><strong>Package Compilation</strong>: Dependencies (<code>Flask</code>, <code>PyMySQL</code>, <code>cryptography</code>, <code>requests</code>, <code>python-dotenv</code>, <code>google-genai</code>) are compiled via <code>uv</code> in under 5 seconds.</li>
+<li><strong>Live Deployment URL</strong>: <code>https://aiextemporeapp.vercel.app</code></li>
+<h3>7.2 GitHub Continuous Integration</h3>
+<li>Repository: <code>https://github.com/amanthakur0118-lgtm/python_project_ExtemporeAI</code></li>
+<li>Branch: <code>main</code></li>
+<li>Automatic commit pushes trigger instant redeployments on Vercel.</li>
+<hr/>
+<h2>8. VERIFICATION, TESTING & RESULTS</h2>
+<div class="table-responsive"><table class="report-table">
+<thead><tr><th>Test Case ID</th><th>Subsystem / Action</th><th>Input / Condition</th><th>Expected Behavior</th><th>Observed Result</th><th>Status</th></tr></thead><tbody>
+<tr><td><strong>TC-01</strong></td><td>Web Application Shell</td><td><code>GET /</code></td><td>Returns HTML shell with dark theme</td><td>HTTP 200 OK</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-02</strong></td><td>Category Hierarchy</td><td><code>GET /api/categories</code></td><td>Returns 6 taxonomy domains</td><td>HTTP 200 OK (6 loaded)</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-03</strong></td><td>Live RSS Ingestion</td><td><code>GET /api/news/polity</code></td><td>Pulls Google News XML</td><td>HTTP 200 OK (5+ headlines)</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-04</strong></td><td>Topic Formulation</td><td><code>POST /api/generate-question</code></td><td>Domain headline input</td><td>Returns balanced debate motion</td><td>HTTP 200 OK</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-05</strong></td><td>Rubric Incoherence Guard</td><td><code>POST /api/evaluate</code></td><td>Input: <code>"asdf banana potato"</code></td><td>Score < 5/50; Disqualified status</td><td>HTTP 200 OK (Score: 2/50)</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-06</strong></td><td>Rubric Off-Topic Guard</td><td><code>POST /api/evaluate</code></td><td>Sports speech on Legal topic</td><td>Relevance penalized to 1/10</td><td>HTTP 200 OK (Score: 10/50)</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-07</strong></td><td>Rubric High Quality</td><td><code>POST /api/evaluate</code></td><td>Structured constitutional speech</td><td>Score > 35/50; Distinguished tier</td><td>HTTP 200 OK (Score: 40/50)</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-08</strong></td><td>Daily Quiz API</td><td><code>GET /api/quiz?domain=polity</code></td><td>Domain filter query</td><td>Returns 5 randomized MCQs</td><td>HTTP 200 OK (5 questions)</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-09</strong></td><td>Quiz Scoring & Storage</td><td><code>POST /api/quiz/submit</code></td><td>5 user answers + time taken</td><td>Computes accuracy & saves to DB</td><td>HTTP 200 OK (DB written)</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-10</strong></td><td>Database Persistence</td><td><code>GET /api/history</code></td><td>User session query</td><td>Returns historical drills</td><td>HTTP 200 OK</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-11</strong></td><td>Vector Favicon Delivery</td><td><code>GET /favicon.ico</code></td><td>Direct icon request</td><td>Returns SVG/ICO icon</td><td>HTTP 200 OK (<code>image/svg+xml</code>)</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-12</strong></td><td>JS Syntax Validation</td><td>Node compiler</td><td><code>node -c static/js/app.js</code></td><td>Zero syntax errors</td><td>Exit Code 0 (0 errors)</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-13</strong></td><td>DOM ID Audit</td><td>Python parser</td><td>Audit 119 script ID references</td><td>0 missing DOM elements in HTML</td><td>100% Validated (0 missing)</td><td><strong>PASS</strong></td></tr>
+<tr><td><strong>TC-14</strong></td><td>Cloud Production</td><td><code>GET https://aiextemporeapp.vercel.app</code></td><td>Global HTTPS request</td><td>Live Vercel serverless response</td><td>HTTP 200 OK</td><td><strong>PASS</strong></td></tr>
+</tbody></table></div>
+<hr/>
+<h2>9. FUTURE SCOPE & ENHANCEMENTS</h2>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Acoustic Audio Prosody & Pitch Analysis</strong>:</li>
+<p>   - Integrating Fast Fourier Transform (FFT) analysis on recorded audio to detect pitch variation, vocal enthusiasm, and nervous vocal tremors.</p>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Computer Vision & Non-Verbal Communication Tracking</strong>:</li>
+<p>   - Integrating lightweight WebRTC and MediaPipe computer vision to evaluate camera eye-contact, facial composure, and open hand gestures.</p>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Multi-Agent Group Discussion (GD) Simulation</strong>:</li>
+<p>   - Deploying multiple LLM-driven autonomous peer avatars that simulate rival candidates in an MBA or corporate GD chamber, interjecting with counterarguments.</p>
+<li style="list-style-type: decimal; margin-left: 1.5rem;"><strong>Offline Progressive Web App (PWA)</strong>:</li>
+<p>   - Service Worker caching to allow practice drills and mock recording in low-connectivity areas.</p>
+<hr/>
+<h2>10. CONCLUSION</h2>
+<p>ExtemporeAI bridges the divide between passive news consumption and active public speaking eloquence. By uniting real-time news scraping, client-side speech recognition, rigorous 50-point UPSC rubric evaluation with anti-hallucination safeguards, and an interactive Daily MCQ Quiz mode, the platform provides candidates with an accessible, high-yield training ground. Deployed globally on Vercel with zero server overhead and open-sourced on GitHub, ExtemporeAI establishes a modern benchmark for autonomous conversational AI coaching platforms.</p>
+<hr/>
+<h2>11. APPENDIX & REPOSITORY DETAILS</h2>
+<li><strong>Live Production URL</strong>: <a href="https://aiextemporeapp.vercel.app" target="_blank">https://aiextemporeapp.vercel.app</a></li>
+<li><strong>GitHub Repository</strong>: <a href="https://github.com/amanthakur0118-lgtm/python_project_ExtemporeAI" target="_blank">https://github.com/amanthakur0118-lgtm/python_project_ExtemporeAI</a></li>
+<li><strong>PowerPoint Presentation</strong>: <a href="file:///C:/Users/AMAN/.gemini/antigravity/scratch/ai_extempore_app/ExtemporeAI_Presentation.pptx" target="_blank"><code>ExtemporeAI_Presentation.pptx</code></a></li>
+<li><strong>Interactive Presentation Deck</strong>: <a href="file:///C:/Users/AMAN/.gemini/antigravity/scratch/ai_extempore_app/ExtemporeAI_Presentation.html" target="_blank"><code>ExtemporeAI_Presentation.html</code></a></li>
+<li><strong>Printable HTML Report</strong>: <a href="file:///C:/Users/AMAN/.gemini/antigravity/scratch/ai_extempore_app/ExtemporeAI_Project_Report.html" target="_blank"><code>ExtemporeAI_Project_Report.html</code></a></li>
+<li><strong>Local Quickstart</strong>: Double-click <code>run.bat</code> in the project root directory.</li>
+</div>
+
+</body>
+</html>
