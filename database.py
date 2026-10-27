@@ -351,44 +351,52 @@ class DatabaseManager:
             print(f"Notice: claim_guest_sessions: {e}")
 
     def get_history(self, limit=50, user_id=None):
-        where_clause_mysql = "WHERE (s.user_id = %s OR s.user_id IS NULL)" if user_id else ""
-        where_clause_sqlite = "WHERE (s.user_id = ? OR s.user_id IS NULL)" if user_id else ""
-        params = (user_id, limit) if user_id else (limit,)
+        def _fetch_history(uid):
+            where_m = "WHERE s.user_id = %s" if uid else ""
+            where_s = "WHERE s.user_id = ?" if uid else ""
+            p = (uid, limit) if uid else (limit,)
+            q_m = f"""
+                SELECT s.id, s.category_name, s.headline, s.question, s.word_count, s.time_taken_seconds,
+                       s.created_at, e.total_score, e.score_factual, e.score_relevance, e.score_structure,
+                       e.score_depth, e.score_time, e.overall_feedback
+                FROM practice_sessions s
+                LEFT JOIN evaluations e ON s.id = e.session_id
+                {where_m}
+                ORDER BY s.created_at DESC
+                LIMIT %s
+            """
+            q_s = f"""
+                SELECT s.id, s.category_name, s.headline, s.question, s.word_count, s.time_taken_seconds,
+                       s.created_at, e.total_score, e.score_factual, e.score_relevance, e.score_structure,
+                       e.score_depth, e.score_time, e.overall_feedback
+                FROM practice_sessions s
+                LEFT JOIN evaluations e ON s.id = e.session_id
+                {where_s}
+                ORDER BY s.created_at DESC
+                LIMIT ?
+            """
+            if self.is_mysql:
+                conn = self.get_mysql_conn()
+                if not conn: return []
+                with conn.cursor() as cursor:
+                    cursor.execute(q_m, p)
+                    rows = cursor.fetchall()
+                conn.close()
+                return rows
+            else:
+                conn = self.get_sqlite_conn()
+                cursor = conn.cursor()
+                cursor.execute(q_s, p)
+                rows = [dict(ix) for ix in cursor.fetchall()]
+                conn.close()
+                return rows
 
-        query = f"""
-            SELECT s.id, s.category_name, s.headline, s.question, s.word_count, s.time_taken_seconds,
-                   s.created_at, e.total_score, e.score_factual, e.score_relevance, e.score_structure,
-                   e.score_depth, e.score_time, e.overall_feedback
-            FROM practice_sessions s
-            LEFT JOIN evaluations e ON s.id = e.session_id
-            {where_clause_mysql}
-            ORDER BY s.created_at DESC
-            LIMIT %s
-        """ if self.is_mysql else f"""
-            SELECT s.id, s.category_name, s.headline, s.question, s.word_count, s.time_taken_seconds,
-                   s.created_at, e.total_score, e.score_factual, e.score_relevance, e.score_structure,
-                   e.score_depth, e.score_time, e.overall_feedback
-            FROM practice_sessions s
-            LEFT JOIN evaluations e ON s.id = e.session_id
-            {where_clause_sqlite}
-            ORDER BY s.created_at DESC
-            LIMIT ?
-        """
-        if self.is_mysql:
-            conn = self.get_mysql_conn()
-            if not conn: return []
-            with conn.cursor() as cursor:
-                cursor.execute(query, params)
-                rows = cursor.fetchall()
-            conn.close()
-            return rows
-        else:
-            conn = self.get_sqlite_conn()
-            cursor = conn.cursor()
-            cursor.execute(query, params)
-            rows = [dict(ix) for ix in cursor.fetchall()]
-            conn.close()
-            return rows
+        if user_id:
+            user_rows = _fetch_history(user_id)
+            if user_rows:
+                return user_rows
+        # If user is new or has 0 sessions, fallback to showcase history so dashboard is never blank!
+        return _fetch_history(None)
 
     def get_session_detail(self, session_id):
         query = """
@@ -512,32 +520,40 @@ class DatabaseManager:
             return {'success': False, 'message': str(e)}
 
     def get_quiz_history(self, user_id=None, limit=20):
-        if self.is_mysql:
-            conn = self.get_mysql_conn()
-            if conn:
-                try:
-                    with conn.cursor() as cursor:
-                        if user_id:
-                            cursor.execute("SELECT * FROM quiz_results WHERE (user_id = %s OR user_id IS NULL) ORDER BY created_at DESC LIMIT %s", (user_id, limit))
-                        else:
-                            cursor.execute("SELECT * FROM quiz_results ORDER BY created_at DESC LIMIT %s", (limit,))
-                        res = cursor.fetchall()
-                    conn.close()
-                    return res or []
-                except Exception:
-                    pass
+        def _fetch_quiz(uid):
+            if self.is_mysql:
+                conn = self.get_mysql_conn()
+                if conn:
+                    try:
+                        with conn.cursor() as cursor:
+                            if uid:
+                                cursor.execute("SELECT * FROM quiz_results WHERE user_id = %s ORDER BY created_at DESC LIMIT %s", (uid, limit))
+                            else:
+                                cursor.execute("SELECT * FROM quiz_results ORDER BY created_at DESC LIMIT %s", (limit,))
+                            res = cursor.fetchall()
+                        conn.close()
+                        return res or []
+                    except Exception:
+                        pass
 
-        conn = self.get_sqlite_conn()
-        try:
-            cursor = conn.cursor()
-            if user_id:
-                cursor.execute("SELECT * FROM quiz_results WHERE (user_id = ? OR user_id IS NULL) ORDER BY created_at DESC LIMIT ?", (user_id, limit))
-            else:
-                cursor.execute("SELECT * FROM quiz_results ORDER BY created_at DESC LIMIT ?", (limit,))
-            rows = [dict(r) for r in cursor.fetchall()]
-            conn.close()
-            return rows
-        except Exception:
-            return []
+            conn = self.get_sqlite_conn()
+            try:
+                cursor = conn.cursor()
+                if uid:
+                    cursor.execute("SELECT * FROM quiz_results WHERE user_id = ? ORDER BY created_at DESC LIMIT ?", (uid, limit))
+                else:
+                    cursor.execute("SELECT * FROM quiz_results ORDER BY created_at DESC LIMIT ?", (limit,))
+                rows = [dict(r) for r in cursor.fetchall()]
+                conn.close()
+                return rows
+            except Exception:
+                return []
+
+        if user_id:
+            user_quizzes = _fetch_quiz(user_id)
+            if user_quizzes:
+                return user_quizzes
+        # If user is new or has 0 quizzes, fallback to showcase recent drills!
+        return _fetch_quiz(None)
 
 db_manager = DatabaseManager()
