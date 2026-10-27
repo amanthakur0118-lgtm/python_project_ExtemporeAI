@@ -48,6 +48,7 @@ def register():
         user_id = res['user_id']
         session['user_id'] = user_id
         session['username'] = username
+        db_manager.claim_guest_sessions(user_id)
         return jsonify({
             'success': True,
             'message': 'Account created successfully!',
@@ -73,6 +74,7 @@ def login():
 
     session['user_id'] = user['id']
     session['username'] = user['username']
+    db_manager.claim_guest_sessions(user['id'])
     return jsonify({
         'success': True,
         'message': f"Welcome back, {user['username']}!",

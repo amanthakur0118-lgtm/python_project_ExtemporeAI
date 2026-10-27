@@ -327,9 +327,32 @@ class DatabaseManager:
             conn.commit()
             conn.close()
 
+    def claim_guest_sessions(self, user_id):
+        """Links any unassigned guest practice sessions and quiz records to the logged-in user."""
+        if not user_id:
+            return
+        try:
+            if self.is_mysql:
+                conn = self.get_mysql_conn()
+                if conn:
+                    with conn.cursor() as cursor:
+                        cursor.execute("UPDATE practice_sessions SET user_id = %s WHERE user_id IS NULL", (user_id,))
+                        cursor.execute("UPDATE quiz_results SET user_id = %s WHERE user_id IS NULL", (user_id,))
+                    conn.commit()
+                    conn.close()
+            else:
+                conn = self.get_sqlite_conn()
+                cursor = conn.cursor()
+                cursor.execute("UPDATE practice_sessions SET user_id = ? WHERE user_id IS NULL", (user_id,))
+                cursor.execute("UPDATE quiz_results SET user_id = ? WHERE user_id IS NULL", (user_id,))
+                conn.commit()
+                conn.close()
+        except Exception as e:
+            print(f"Notice: claim_guest_sessions: {e}")
+
     def get_history(self, limit=50, user_id=None):
-        where_clause_mysql = "WHERE s.user_id = %s" if user_id else ""
-        where_clause_sqlite = "WHERE s.user_id = ?" if user_id else ""
+        where_clause_mysql = "WHERE (s.user_id = %s OR s.user_id IS NULL)" if user_id else ""
+        where_clause_sqlite = "WHERE (s.user_id = ? OR s.user_id IS NULL)" if user_id else ""
         params = (user_id, limit) if user_id else (limit,)
 
         query = f"""
@@ -495,7 +518,7 @@ class DatabaseManager:
                 try:
                     with conn.cursor() as cursor:
                         if user_id:
-                            cursor.execute("SELECT * FROM quiz_results WHERE user_id = %s ORDER BY created_at DESC LIMIT %s", (user_id, limit))
+                            cursor.execute("SELECT * FROM quiz_results WHERE (user_id = %s OR user_id IS NULL) ORDER BY created_at DESC LIMIT %s", (user_id, limit))
                         else:
                             cursor.execute("SELECT * FROM quiz_results ORDER BY created_at DESC LIMIT %s", (limit,))
                         res = cursor.fetchall()
@@ -508,7 +531,7 @@ class DatabaseManager:
         try:
             cursor = conn.cursor()
             if user_id:
-                cursor.execute("SELECT * FROM quiz_results WHERE user_id = ? ORDER BY created_at DESC LIMIT ?", (user_id, limit))
+                cursor.execute("SELECT * FROM quiz_results WHERE (user_id = ? OR user_id IS NULL) ORDER BY created_at DESC LIMIT ?", (user_id, limit))
             else:
                 cursor.execute("SELECT * FROM quiz_results ORDER BY created_at DESC LIMIT ?", (limit,))
             rows = [dict(r) for r in cursor.fetchall()]
